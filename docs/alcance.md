@@ -72,14 +72,124 @@ Mostrar el historial y progreso.
 Presentar alternativas de ejercicios.
 Organizar los contenidos educativos de alimentación.
 Generar combinaciones de alimentos según las opciones seleccionadas por el usuario.
+
 ## Objetivo y metricas de exito
+Objetivo general
+
+Desarrollar una aplicación móvil que ayude a las personas a organizar y realizar sus entrenamientos, registrar su progreso y adquirir conocimientos básicos sobre alimentación de acuerdo con sus objetivos, preferencias y hábitos.
+
+Objetivos específicos
+
+Facilitar la organización de rutinas de entrenamiento.
+Ayudar al usuario a conocer y comprender diferentes ejercicios.
+Permitir registrar los datos de cada entrenamiento.
+Facilitar el seguimiento del progreso.
+Ofrecer alternativas cuando un ejercicio requiere un equipo que no está disponible.
+Proporcionar información educativa sobre alimentación.
+Ayudar al usuario a comprender cómo combinar diferentes grupos de alimentos.
+Presentar la información de manera sencilla y fácil de utilizar.
+Métricas de éxito
+
+La aplicación se considerará exitosa si:
+
+Al menos el 80 % de los usuarios de prueba puede iniciar un entrenamiento sin ayuda.
+Al menos el 80 % de los usuarios puede registrar correctamente una serie.
+Los usuarios pueden encontrar un ejercicio en menos de 30 segundos.
+Al menos el 80 % de los usuarios de prueba comprende cómo utilizar la sección de alimentación.
+Los usuarios pueden consultar su progreso y comprender la información presentada.
+La aplicación puede ser utilizada sin necesidad de conocimientos previos sobre entrenamiento o nutrición.
 
 ## Restricciones
+La aplicación será desarrollada como una aplicación móvil.
+
+El proyecto se desarrollará utilizando Flutter.
+
+El código será administrado mediante Git y GitHub.
+
+El tiempo de desarrollo estará limitado al establecido para el proyecto académico (3 - 4 meses).
+
+Las funcionalidades implementadas inicialmente estarán limitadas al alcance definido para el MVP.
+
+La aplicación dependerá de la información disponible en su base de datos.
+
+La aplicación tendrá un enfoque educativo y no reemplazará la asesoría de profesionales.
+
+No se realizarán diagnósticos médicos ni nutricionales.
+
+No se establecerán tratamientos para enfermedades o condiciones de salud.
+
+Las recomendaciones relacionadas con alimentación serán de carácter general y educativo.
 
 ## Alcance
 ### Incluye
-### No incluye
+Gestión del usuario
 
+Registro e inicio de sesión.
+Configuración básica del perfil.
+Selección del nivel de experiencia.
+Selección de objetivos.
+Selección de preferencias relacionadas con entrenamiento y alimentación.
+
+Entrenamiento
+
+Visualización de rutinas.
+Consulta de ejercicios.
+Búsqueda de ejercicios.
+Información básica de cada ejercicio.
+Indicaciones para realizar los ejercicios.
+Identificación del equipo necesario.
+Alternativas para ejercicios cuando determinado equipo no esté disponible.
+Inicio de una sesión de entrenamiento.
+Registro de series, repeticiones y peso.
+Temporizador de descanso.
+Finalización del entrenamiento.
+Historial de entrenamientos.
+
+Progreso
+
+Visualización del historial.
+Estadísticas básicas.
+Seguimiento de ejercicios registrados.
+Visualización de mejoras y récords personales.
+Logros relacionados con la constancia y realización de entrenamientos.
+
+NutriGuía
+
+La aplicación contará con un módulo dedicado a la educación y organización básica de la alimentación.
+
+Incluirá:
+
+Información básica sobre grupos de alimentos.
+Contenido educativo sobre proteínas, carbohidratos, grasas, frutas, verduras y otros alimentos.
+Explicaciones sencillas sobre la función de diferentes nutrientes.
+Ideas generales de comidas.
+Herramienta para construir una comida seleccionando diferentes grupos de alimentos.
+Posibilidad de seleccionar alimentos disponibles o preferidos.
+Contenido sobre alimentación antes y después del entrenamiento.
+Sección de mitos y realidades sobre alimentación.
+
+### No incluye
+Para mantener un alcance adecuado al proyecto, la primera versión no incluirá:
+
+Diagnóstico de enfermedades.
+Dietas médicas.
+Tratamientos nutricionales.
+Prescripción nutricional personalizada.
+Consulta directa con nutricionistas.
+Consulta directa con entrenadores.
+Compra o venta de alimentos.
+Pagos dentro de la aplicación.
+Red social completa.
+Chat entre usuarios.
+Clases virtuales en vivo.
+Integración con relojes inteligentes.
+Integración con dispositivos médicos.
+Análisis corporal mediante fotografías.
+Reconocimiento automático de ejercicios mediante cámara.
+Seguimiento médico.
+Funcionalidades avanzadas de inteligencia artificial.
+
+Estas funcionalidades podrán considerarse como posibles mejoras futuras.
 ## Conceptos del dominio
 
 ## Reglas de negocio
