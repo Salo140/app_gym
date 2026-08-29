@@ -324,7 +324,8 @@ Postcondiciones: El usuario recibe una recomendación simple para su próxima se
 6. Perfil Home → Perfil → Editar datos / Editar objetivos y nivel / Configuración
 
 ## Propuestas de diseno y mockups
-Dirección visual sugerida
+
+1. Dirección visual sugerida
 
 Estilo limpio, moderno, con tarjetas (cards) para rutinas, ejercicios y comidas — facilita escaneo visual rápido.
 Paleta: un color primario energético (p. ej. verde o naranja, asociado a actividad física) + un color secundario cálido para NutriGuía, diferenciando visualmente ambos módulos sin perder coherencia de marca.
@@ -332,7 +333,7 @@ Modo claro y oscuro (útil para uso en gimnasio con distintas condiciones de luz
 Tipografía clara y de buen tamaño, pensada para lectura rápida durante el entrenamiento (poca lectura fina, mucho ícono + número grande para peso/repeticiones).
 Navegación por tabs inferiores: Home, Rutinas, Progreso, NutriGuía, Perfil.
 
-Pantallas prioritarias para mockups (MVP)
+2. Pantallas prioritarias para mockups (MVP)
 
 Home
 Detalle de rutina / ejercicio
