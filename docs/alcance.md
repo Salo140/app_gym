@@ -341,3 +341,5 @@ Registro de serie + temporizador de descanso (la pantalla más usada, debe ser l
 Resumen de entrenamiento (con sugerencia de progresión)
 Progreso (gráficas + medidas corporales)
 Construir comida (NutriGuía)
+
+La aplicación ayuda a las personas a entrenar organizadamente.
