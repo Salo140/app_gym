@@ -221,13 +221,14 @@ RN-14: El usuario puede construir una comida seleccionando como mínimo un alime
 RN-15: Las combinaciones de comidas generadas son sugerencias generales y no cálculos nutricionales personalizados (no se calculan calorías ni macros individualizados en el MVP, salvo que decidan incluirlo como mejora).
 
 ## Historias de usuario
-Gestión de usuario
+
+1. Gestión de usuario
 
 HU-01: Como usuario nuevo, quiero registrarme con mis datos básicos, para poder acceder a la aplicación.
 HU-02: Como usuario, quiero seleccionar mi nivel de experiencia y objetivos, para recibir rutinas y contenido adecuados a mi situación.
 HU-03: Como usuario, quiero editar mi perfil, para mantener actualizada mi información y preferencias.
 
-Entrenamiento
+2. Entrenamiento
 
 HU-04: Como usuario principiante, quiero consultar rutinas sugeridas por día, para saber qué entrenar sin tener que planificarlo yo mismo.
 HU-05: Como usuario, quiero buscar un ejercicio específico, para encontrarlo en menos de 30 segundos.
@@ -237,7 +238,7 @@ HU-08: Como usuario, quiero iniciar una sesión de entrenamiento y registrar ser
 HU-09: Como usuario, quiero que se active un temporizador de descanso entre series, para organizar mejor mi tiempo de entrenamiento.
 HU-10: Como usuario intermedio/avanzado, quiero crear o personalizar mis propias rutinas, para adaptarlas a mi progreso y preferencias.
 
-Progreso
+3. Progreso
 
 HU-11: Como usuario, quiero consultar mi historial de entrenamientos, para revisar lo que he realizado anteriormente.
 HU-12: Como usuario, quiero ver estadísticas y gráficas de mi progreso, para entender cómo he mejorado con el tiempo.
@@ -245,7 +246,7 @@ HU-13: Como usuario, quiero registrar mis medidas corporales periódicamente, pa
 HU-14: Como usuario, quiero recibir una sugerencia de aumento de peso o repeticiones según mi historial, para saber cómo progresar de forma segura.
 HU-15: Como usuario constante, quiero recibir logros por cumplir metas de entrenamiento, para mantenerme motivado.
 
-NutriGuía
+4. NutriGuía
 
 HU-16: Como usuario, quiero consultar contenido educativo sobre grupos de alimentos, para entender mejor cómo alimentarme.
 HU-17: Como usuario, quiero construir una comida seleccionando alimentos de distintos grupos, para armar ideas variadas según lo que tengo disponible.
