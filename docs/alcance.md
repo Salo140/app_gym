@@ -342,4 +342,5 @@ Resumen de entrenamiento (con sugerencia de progresión)
 Progreso (gráficas + medidas corporales)
 Construir comida (NutriGuía)
 
-La aplicación ayuda a las personas a entrenar organizadamente.
+
+La aplicación ayuda a las personas a entrenar organizadamente y mejorar su alimentación.
