@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Forge Performance',
+      title: 'TrackWell',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: ThemeData(

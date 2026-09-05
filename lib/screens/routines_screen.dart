@@ -30,7 +30,7 @@ class RoutinesScreen extends StatelessWidget {
             const SizedBox(width: 8),
             const Flexible(
               child: Text(
-                'FORGE PERFORMANCE',
+                'TRACKWELL',
                 overflow: TextOverflow.ellipsis,
               ),
             ),

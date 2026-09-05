@@ -14,7 +14,7 @@ void main() {
   testWidgets('muestra rutinas y alterna el tema', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('FORGE PERFORMANCE'), findsOneWidget);
+    expect(find.text('TRACKWELL'), findsOneWidget);
     expect(find.text('Strength'), findsOneWidget);
     expect(find.byType(GridView), findsOneWidget);
 

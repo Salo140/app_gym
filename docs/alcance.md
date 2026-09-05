@@ -7,7 +7,7 @@ Los principiantes pueden no saber qué ejercicios realizar, cómo ejecutarlos co
 
 La alimentación también representa una dificultad frecuente, ya que existe mucha información contradictoria sobre qué comer, qué alimentos elegir, cómo organizar las comidas y cómo relacionar la alimentación con la actividad física.
 
-"Nombre aplicación" busca solucionar estas necesidades mediante una aplicación móvil que integre entrenamiento y educación alimentaria en un mismo lugar. La aplicación permitirá al usuario consultar y realizar rutinas, aprender sobre ejercicios, registrar sus entrenamientos, visualizar su progreso y acceder a herramientas educativas que le ayuden a comprender cómo construir comidas variadas de acuerdo con sus preferencias y objetivos.
+"TrackWell" busca solucionar estas necesidades mediante una aplicación móvil que integre entrenamiento y educación alimentaria en un mismo lugar. La aplicación permitirá al usuario consultar y realizar rutinas, aprender sobre ejercicios, registrar sus entrenamientos, visualizar su progreso y acceder a herramientas educativas que le ayuden a comprender cómo construir comidas variadas de acuerdo con sus preferencias y objetivos.
 
 La aplicación tendrá un enfoque educativo y de acompañamiento, por lo que no pretende sustituir la orientación de entrenadores, nutricionistas o profesionales de la salud.
 
