@@ -28,7 +28,12 @@ class RoutinesScreen extends StatelessWidget {
           children: [
             const Icon(Icons.fitness_center),
             const SizedBox(width: 8),
-            const Text('FORGE PERFORMANCE'),
+            const Flexible(
+              child: Text(
+                'FORGE PERFORMANCE',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [

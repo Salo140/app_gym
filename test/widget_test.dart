@@ -11,20 +11,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:proyecto_pm/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('muestra rutinas y alterna el tema', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('FORGE PERFORMANCE'), findsOneWidget);
+    expect(find.text('Strength'), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    final MaterialApp app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+
+    await tester.tap(find.byTooltip('Cambiar tema'));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final MaterialApp updatedApp =
+        tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(updatedApp.themeMode, ThemeMode.light);
+  });
+
+  testWidgets('no desborda en un ancho movil', (WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
   });
 }
