@@ -75,7 +75,7 @@ class RoutinesScreen extends StatelessWidget {
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 1.3,
+                  mainAxisExtent: 160,
                 ),
                 itemBuilder: (context, index) {
                   final category = categories[index];
