@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:proyecto_pm/main.dart';
 import 'package:proyecto_pm/models/workout_plan.dart';
 import 'package:proyecto_pm/screens/entrenar_screen.dart';
 import 'package:proyecto_pm/screens/category_detail_screen.dart';
