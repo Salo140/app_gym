@@ -83,8 +83,11 @@ class _InicioViewState extends State<InicioView> {
       ),
       child: Row(
         children: [
-          const Icon(Symbols.notifications_active,
-              color: AppColors.primary, size: 18),
+          const Icon(
+            Symbols.notifications_active,
+            color: AppColors.primary,
+            size: 18,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -94,8 +97,11 @@ class _InicioViewState extends State<InicioView> {
           ),
           InkWell(
             onTap: () => setState(() => _showNotificationToast = false),
-            child: const Icon(Symbols.close,
-                color: AppColors.onSurfaceVariant, size: 18),
+            child: const Icon(
+              Symbols.close,
+              color: AppColors.onSurfaceVariant,
+              size: 18,
+            ),
           ),
         ],
       ),
@@ -140,8 +146,8 @@ class _InicioViewState extends State<InicioView> {
           ),
         ),
         GestureDetector(
-          onTap: () => setState(
-              () => _showNotificationToast = !_showNotificationToast),
+          onTap: () =>
+              setState(() => _showNotificationToast = !_showNotificationToast),
           child: Container(
             width: 44,
             height: 44,
@@ -152,8 +158,11 @@ class _InicioViewState extends State<InicioView> {
             child: Stack(
               alignment: Alignment.center,
               children: const [
-                Icon(Symbols.notifications,
-                    size: 22, color: AppColors.onSurface),
+                Icon(
+                  Symbols.notifications,
+                  size: 22,
+                  color: AppColors.onSurface,
+                ),
                 Positioned(top: 10, right: 10, child: PulseDot(size: 8)),
               ],
             ),
@@ -171,8 +180,12 @@ class _InicioViewState extends State<InicioView> {
         children: [
           Row(
             children: [
-              const Icon(Symbols.local_fire_department,
-                  color: AppColors.secondaryLight, size: 20, fill: 1),
+              const Icon(
+                Symbols.local_fire_department,
+                color: AppColors.secondaryLight,
+                size: 20,
+                fill: 1,
+              ),
               const SizedBox(width: 8),
               Text('Racha Semanal', style: AppText.headlineSm()),
               const Spacer(),
@@ -221,8 +234,12 @@ class _InicioViewState extends State<InicioView> {
               ),
             ],
           ),
-          child: const Icon(Symbols.check,
-              size: 16, color: AppColors.onPrimary, weight: 700),
+          child: const Icon(
+            Symbols.check,
+            size: 16,
+            color: AppColors.onPrimary,
+            weight: 700,
+          ),
         );
         break;
       case _DayState.today:
@@ -238,7 +255,10 @@ class _InicioViewState extends State<InicioView> {
           child: Text(
             'Hoy',
             style: AppText.metric(
-                color: AppColors.primaryLight, size: 10, weight: FontWeight.w700),
+              color: AppColors.primaryLight,
+              size: 10,
+              weight: FontWeight.w700,
+            ),
           ),
         );
         break;
@@ -272,8 +292,11 @@ class _InicioViewState extends State<InicioView> {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.cardBorderSoft),
           ),
-          child: Icon(Symbols.hotel,
-              size: 14, color: AppColors.fade(AppColors.secondaryLight, 0.6)),
+          child: Icon(
+            Symbols.hotel,
+            size: 14,
+            color: AppColors.fade(AppColors.secondaryLight, 0.6),
+          ),
         );
         break;
     }
@@ -331,7 +354,9 @@ class _InicioViewState extends State<InicioView> {
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 5),
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.fade(AppColors.surfaceLowest, 0.8),
                       borderRadius: BorderRadius.circular(999),
@@ -380,10 +405,17 @@ class _InicioViewState extends State<InicioView> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    _statChip(Symbols.timer, AppColors.secondaryLight, '50 min'),
+                    _statChip(
+                      Symbols.timer,
+                      AppColors.secondaryLight,
+                      '50 min',
+                    ),
                     _dotSeparator(),
-                    _statChip(Symbols.fitness_center, AppColors.primaryLight,
-                        '5 ejercicios'),
+                    _statChip(
+                      Symbols.fitness_center,
+                      AppColors.primaryLight,
+                      '5 ejercicios',
+                    ),
                     _dotSeparator(),
                     _statChip(Symbols.bolt, AppColors.tertiary, '16 series'),
                   ],
@@ -414,19 +446,19 @@ class _InicioViewState extends State<InicioView> {
   }
 
   Widget _dotSeparator() => Container(
-        width: 4,
-        height: 4,
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceHighest,
-          shape: BoxShape.circle,
-        ),
-      );
+    width: 4,
+    height: 4,
+    margin: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: const BoxDecoration(
+      color: AppColors.surfaceHighest,
+      shape: BoxShape.circle,
+    ),
+  );
 
   // -------------------------------------------------------- métricas del día
   Widget _dailyMetrics() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: _metricTile(
@@ -486,10 +518,7 @@ class _InicioViewState extends State<InicioView> {
             child: Icon(icon, size: 18, color: color, fill: filled ? 1 : 0),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppText.metric(size: 18, weight: FontWeight.w700),
-          ),
+          Text(value, style: AppText.metric(size: 18, weight: FontWeight.w700)),
           const SizedBox(height: 2),
           Text(
             label,
@@ -527,8 +556,11 @@ class _InicioViewState extends State<InicioView> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Symbols.restaurant_menu,
-                            size: 16, color: AppColors.tertiary),
+                        const Icon(
+                          Symbols.restaurant_menu,
+                          size: 16,
+                          color: AppColors.tertiary,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'NUTRIGUÍA SUGERIDA',
@@ -541,8 +573,10 @@ class _InicioViewState extends State<InicioView> {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('Arma tu plato post-entreno',
-                        style: AppText.headlineSm()),
+                    Text(
+                      'Arma tu plato post-entreno',
+                      style: AppText.headlineSm(),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       'Descubre la proporción ideal de 40g de proteína magra y '
@@ -583,8 +617,11 @@ class _InicioViewState extends State<InicioView> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Symbols.arrow_forward,
-                        size: 16, color: AppColors.primary),
+                    const Icon(
+                      Symbols.arrow_forward,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
                   ],
                 ),
               ),
@@ -603,8 +640,12 @@ class _InicioViewState extends State<InicioView> {
         children: [
           Row(
             children: [
-              const Icon(Symbols.lightbulb,
-                  size: 20, color: AppColors.secondary, fill: 1),
+              const Icon(
+                Symbols.lightbulb,
+                size: 20,
+                color: AppColors.secondary,
+                fill: 1,
+              ),
               const SizedBox(width: 6),
               Text(
                 'MITO FITNESS DEL DÍA',
@@ -666,7 +707,9 @@ class _InicioViewState extends State<InicioView> {
                   borderRadius: BorderRadius.circular(999),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: _hasLikedMyth
                           ? AppColors.fade(AppColors.primary, 0.2)
@@ -714,8 +757,11 @@ class _InicioViewState extends State<InicioView> {
                       color: AppColors.surfaceHigh,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Symbols.share,
-                        size: 16, color: AppColors.onSurfaceVariant),
+                    child: const Icon(
+                      Symbols.share,
+                      size: 16,
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ],

@@ -5,9 +5,13 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../models/workout_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
+import '../widgets/plan_components.dart';
+import 'category_detail_screen.dart';
+import 'plan_form_screen.dart';
 
 /// Equivale a `EntrenarView.tsx`.
 class EntrenarView extends StatefulWidget {
@@ -96,7 +100,9 @@ class _EntrenarViewState extends State<EntrenarView> {
       current.reps = _activeReps;
       current.completed = true;
 
-      final nextIndex = _exercise.sets.indexWhere((s) => s.id == _activeSetId + 1);
+      final nextIndex = _exercise.sets.indexWhere(
+        (s) => s.id == _activeSetId + 1,
+      );
       if (nextIndex != -1) {
         final next = _exercise.sets[nextIndex];
         _activeSetId = next.id;
@@ -142,8 +148,11 @@ class _EntrenarViewState extends State<EntrenarView> {
         ),
       );
     });
-    showGymToast(context, 'Serie adicional #$newId agregada a la lista.',
-        duration: const Duration(milliseconds: 2500));
+    showGymToast(
+      context,
+      'Serie adicional #$newId agregada a la lista.',
+      duration: const Duration(milliseconds: 2500),
+    );
   }
 
   void _selectAlternative(ExerciseAlternative alt) {
@@ -168,7 +177,10 @@ class _EntrenarViewState extends State<EntrenarView> {
 
     final restProgress = _totalRestSeconds == 0
         ? 0.0
-        : (_restSeconds / _totalRestSeconds).toDouble().clamp(0.0, 1.0).toDouble();
+        : (_restSeconds / _totalRestSeconds)
+              .toDouble()
+              .clamp(0.0, 1.0)
+              .toDouble();
 
     return Stack(
       children: [
@@ -186,6 +198,8 @@ class _EntrenarViewState extends State<EntrenarView> {
                     bottomInset(context) + (_showRestWidget ? 80 : 0),
                   ),
                   children: [
+                    _plansSection(),
+                    const SizedBox(height: 16),
                     _exerciseHero(),
                     const SizedBox(height: 16),
                     _setsSection(),
@@ -210,6 +224,83 @@ class _EntrenarViewState extends State<EntrenarView> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _plansSection() {
+    const categories = [
+      RoutineCategory(
+        name: 'Fuerza',
+        description: 'Aumenta tu fuerza base',
+        icon: Symbols.fitness_center,
+      ),
+      RoutineCategory(
+        name: 'Hipertrofia',
+        description: 'Construye masa muscular',
+        icon: Symbols.trending_up,
+      ),
+    ];
+
+    return SurfaceCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Planes personalizados',
+                      style: AppText.headlineSm(size: 16),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Elige una rutina o crea la tuya.',
+                      style: AppText.bodySm(size: 11),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Symbols.auto_awesome, color: AppColors.primary),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const StatChip(label: 'sesiones', value: '12'),
+              const SizedBox(width: 8),
+              const StatChip(label: 'racha', value: '4 dias'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...categories.map(
+            (category) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: FeatureCard(
+                title: category.name,
+                subtitle: category.description,
+                icon: category.icon,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => CategoryDetailScreen(category: category),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          FeatureCard(
+            title: 'Crear mi plan',
+            subtitle: 'Personaliza objetivo y frecuencia',
+            icon: Symbols.add_task,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const PlanFormScreen()),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -259,7 +350,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                         setState(() => _isSessionRunning = !_isSessionRunning),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 7),
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceHigh,
                         borderRadius: BorderRadius.circular(999),
@@ -269,7 +362,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _isSessionRunning ? Symbols.timer : Symbols.play_arrow,
+                            _isSessionRunning
+                                ? Symbols.timer
+                                : Symbols.play_arrow,
                             size: 16,
                             color: AppColors.secondaryLight,
                           ),
@@ -290,7 +385,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                     onTap: _openFinishDialog,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.error,
                         borderRadius: BorderRadius.circular(999),
@@ -351,21 +448,14 @@ class _EntrenarViewState extends State<EntrenarView> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      _exercise.name,
-                      style: AppText.headlineMd(size: 20),
-                    ),
+                    Text(_exercise.name, style: AppText.headlineMd(size: 20)),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: RemoteImage(
-                  url: _exercise.image,
-                  width: 64,
-                  height: 64,
-                ),
+                child: RemoteImage(url: _exercise.image, width: 64, height: 64),
               ),
             ],
           ),
@@ -380,8 +470,9 @@ class _EntrenarViewState extends State<EntrenarView> {
               decoration: BoxDecoration(
                 color: AppColors.fade(AppColors.secondary, 0.15),
                 borderRadius: BorderRadius.circular(12),
-                border:
-                    Border.all(color: AppColors.fade(AppColors.secondary, 0.4)),
+                border: Border.all(
+                  color: AppColors.fade(AppColors.secondary, 0.4),
+                ),
               ),
               child: Row(
                 children: [
@@ -392,8 +483,11 @@ class _EntrenarViewState extends State<EntrenarView> {
                       color: AppColors.secondary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Symbols.sync,
-                        size: 18, color: AppColors.onSecondaryContainer),
+                    child: const Icon(
+                      Symbols.sync,
+                      size: 18,
+                      color: AppColors.onSecondaryContainer,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -423,8 +517,11 @@ class _EntrenarViewState extends State<EntrenarView> {
                       weight: FontWeight.w600,
                     ),
                   ),
-                  const Icon(Symbols.chevron_right,
-                      size: 18, color: AppColors.secondaryLight),
+                  const Icon(
+                    Symbols.chevron_right,
+                    size: 18,
+                    color: AppColors.secondaryLight,
+                  ),
                 ],
               ),
             ),
@@ -441,8 +538,11 @@ class _EntrenarViewState extends State<EntrenarView> {
             ),
             child: Row(
               children: [
-                const Icon(Symbols.lightbulb,
-                    size: 18, color: AppColors.primaryLight),
+                const Icon(
+                  Symbols.lightbulb,
+                  size: 18,
+                  color: AppColors.primaryLight,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -483,18 +583,27 @@ class _EntrenarViewState extends State<EntrenarView> {
               Expanded(flex: 2, child: Text('SERIE', style: _headerStyle)),
               Expanded(
                 flex: 3,
-                child: Text('ANTERIOR',
-                    textAlign: TextAlign.center, style: _headerStyle),
+                child: Text(
+                  'ANTERIOR',
+                  textAlign: TextAlign.center,
+                  style: _headerStyle,
+                ),
               ),
               Expanded(
                 flex: 4,
-                child: Text('PESO × REPS',
-                    textAlign: TextAlign.center, style: _headerStyle),
+                child: Text(
+                  'PESO × REPS',
+                  textAlign: TextAlign.center,
+                  style: _headerStyle,
+                ),
               ),
               Expanded(
                 flex: 3,
-                child: Text('ESTADO',
-                    textAlign: TextAlign.right, style: _headerStyle),
+                child: Text(
+                  'ESTADO',
+                  textAlign: TextAlign.right,
+                  style: _headerStyle,
+                ),
               ),
             ],
           ),
@@ -522,8 +631,11 @@ class _EntrenarViewState extends State<EntrenarView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Symbols.add,
-                    size: 18, color: AppColors.onSurfaceVariant),
+                const Icon(
+                  Symbols.add,
+                  size: 18,
+                  color: AppColors.onSurfaceVariant,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Añadir Serie Adicional',
@@ -540,17 +652,18 @@ class _EntrenarViewState extends State<EntrenarView> {
     );
   }
 
-  TextStyle get _headerStyle => AppText.labelSm(size: 11, weight: FontWeight.w700);
+  TextStyle get _headerStyle =>
+      AppText.labelSm(size: 11, weight: FontWeight.w700);
 
   Widget _setRow(ExerciseSet set) {
     return InkWell(
       onTap: set.completed
           ? null
           : () => setState(() {
-                _activeSetId = set.id;
-                _activeWeight = set.weight;
-                _activeReps = set.reps;
-              }),
+              _activeSetId = set.id;
+              _activeWeight = set.weight;
+              _activeReps = set.reps;
+            }),
       borderRadius: BorderRadius.circular(12),
       child: Opacity(
         opacity: set.completed ? 1 : 0.7,
@@ -568,9 +681,10 @@ class _EntrenarViewState extends State<EntrenarView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${set.id}',
-                        style: AppText.labelMd(
-                            size: 14, weight: FontWeight.w700)),
+                    Text(
+                      '${set.id}',
+                      style: AppText.labelMd(size: 14, weight: FontWeight.w700),
+                    ),
                     Text(set.type, style: AppText.labelSm(size: 10)),
                   ],
                 ),
@@ -637,7 +751,11 @@ class _EntrenarViewState extends State<EntrenarView> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.fade(AppColors.primary, 0.6)),
         boxShadow: const [
-          BoxShadow(color: Color(0x66000000), blurRadius: 18, offset: Offset(0, 6)),
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -661,7 +779,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                           fontSize: 12,
                           bold: true,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -749,9 +869,10 @@ class _EntrenarViewState extends State<EntrenarView> {
               Expanded(
                 child: Column(
                   children: [
-                    Text(value,
-                        style:
-                            AppText.metric(size: 20, weight: FontWeight.w700)),
+                    Text(
+                      value,
+                      style: AppText.metric(size: 20, weight: FontWeight.w700),
+                    ),
                     Text(unit, style: AppText.labelSm(size: 10)),
                   ],
                 ),
@@ -799,8 +920,11 @@ class _EntrenarViewState extends State<EntrenarView> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.surfaceHighest),
             ),
-            child: const Icon(Symbols.arrow_forward,
-                size: 24, color: AppColors.primaryLight),
+            child: const Icon(
+              Symbols.arrow_forward,
+              size: 24,
+              color: AppColors.primaryLight,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -832,8 +956,11 @@ class _EntrenarViewState extends State<EntrenarView> {
                 color: AppColors.surfaceHigh,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Symbols.swap_vert,
-                  size: 20, color: AppColors.onSurface),
+              child: const Icon(
+                Symbols.swap_vert,
+                size: 20,
+                color: AppColors.onSurface,
+              ),
             ),
           ),
         ],
@@ -868,16 +995,21 @@ class _EntrenarViewState extends State<EntrenarView> {
                   color: AppColors.fade(AppColors.secondary, 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Symbols.hourglass_bottom,
-                    size: 18, color: AppColors.secondaryLight),
+                child: const Icon(
+                  Symbols.hourglass_bottom,
+                  size: 18,
+                  color: AppColors.secondaryLight,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Descanso entre series',
-                        style: AppText.labelSm(size: 10)),
+                    Text(
+                      'Descanso entre series',
+                      style: AppText.labelSm(size: 10),
+                    ),
                     const SizedBox(height: 2),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -891,12 +1023,17 @@ class _EntrenarViewState extends State<EntrenarView> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          'restantes',
-                          style: AppText.labelSm(
-                            color: AppColors.fade(
-                                AppColors.secondaryLight, 0.8),
-                            size: 11,
+                        Flexible(
+                          child: Text(
+                            'restantes',
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.labelSm(
+                              color: AppColors.fade(
+                                AppColors.secondaryLight,
+                                0.8,
+                              ),
+                              size: 11,
+                            ),
                           ),
                         ),
                       ],
@@ -915,8 +1052,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                 ),
                 onTap: () => setState(() {
                   _restSeconds += 30;
-                  _totalRestSeconds =
-                      _totalRestSeconds > _restSeconds ? _totalRestSeconds : _restSeconds;
+                  _totalRestSeconds = _totalRestSeconds > _restSeconds
+                      ? _totalRestSeconds
+                      : _restSeconds;
                 }),
               ),
               const SizedBox(width: 6),
@@ -1013,15 +1151,19 @@ class _EntrenarViewState extends State<EntrenarView> {
                             children: [
                               Pill(
                                 label: 'EQUIPO OCUPADO',
-                                background:
-                                    AppColors.fade(AppColors.secondary, 0.2),
+                                background: AppColors.fade(
+                                  AppColors.secondary,
+                                  0.2,
+                                ),
                                 foreground: AppColors.secondaryLight,
                                 fontSize: 10,
                                 bold: true,
                               ),
                               const SizedBox(width: 8),
-                              Text('Alternativas Inteligentes',
-                                  style: AppText.labelSm(size: 12)),
+                              Text(
+                                'Alternativas Inteligentes',
+                                style: AppText.labelSm(size: 12),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -1042,8 +1184,11 @@ class _EntrenarViewState extends State<EntrenarView> {
                           color: AppColors.surfaceHighest,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Symbols.close,
-                            size: 18, color: AppColors.onSurface),
+                        child: const Icon(
+                          Symbols.close,
+                          size: 18,
+                          color: AppColors.onSurface,
+                        ),
                       ),
                     ),
                   ],
@@ -1127,7 +1272,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                           fontSize: 10,
                           bold: true,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                         ),
                       ],
                     ),
@@ -1147,8 +1294,10 @@ class _EntrenarViewState extends State<EntrenarView> {
               ),
               const SizedBox(width: 10),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(999),
@@ -1195,12 +1344,17 @@ class _EntrenarViewState extends State<EntrenarView> {
                   color: AppColors.fade(AppColors.primary, 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Symbols.emoji_events,
-                    size: 32, color: AppColors.primary),
+                child: const Icon(
+                  Symbols.emoji_events,
+                  size: 32,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(height: 16),
-              Text('¿Finalizar Entrenamiento?',
-                  style: AppText.headlineMd(size: 20)),
+              Text(
+                '¿Finalizar Entrenamiento?',
+                style: AppText.headlineMd(size: 20),
+              ),
               const SizedBox(height: 6),
               RichText(
                 textAlign: TextAlign.center,
@@ -1216,8 +1370,7 @@ class _EntrenarViewState extends State<EntrenarView> {
                       ),
                     ),
                     const TextSpan(
-                      text:
-                          ' de sesión con 16 series y un nuevo récord en press.',
+                      text: ' de sesión con 16 series y un nuevo récord en press.',
                     ),
                   ],
                 ),
@@ -1310,8 +1463,11 @@ class _EntrenarViewState extends State<EntrenarView> {
                     ),
                   ],
                 ),
-                child: const Icon(Symbols.verified,
-                    size: 44, color: AppColors.primary),
+                child: const Icon(
+                  Symbols.verified,
+                  size: 44,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(height: 16),
               Pill(
@@ -1320,12 +1476,17 @@ class _EntrenarViewState extends State<EntrenarView> {
                 foreground: AppColors.primaryLight,
                 fontSize: 12,
                 bold: true,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
               ),
               const SizedBox(height: 12),
-              Text('¡Gran trabajo, Carlos!',
-                  textAlign: TextAlign.center, style: AppText.headlineLg()),
+              Text(
+                '¡Gran trabajo, Carlos!',
+                textAlign: TextAlign.center,
+                style: AppText.headlineLg(),
+              ),
               const SizedBox(height: 8),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 320),
@@ -1343,18 +1504,26 @@ class _EntrenarViewState extends State<EntrenarView> {
                   children: [
                     Expanded(
                       child: _summaryTile(
-                          'TIEMPO', _formatSeconds(_sessionSeconds),
-                          color: AppColors.onSurface),
+                        'TIEMPO',
+                        _formatSeconds(_sessionSeconds),
+                        color: AppColors.onSurface,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _summaryTile('SERIES', '16',
-                          color: AppColors.primary),
+                      child: _summaryTile(
+                        'SERIES',
+                        '16',
+                        color: AppColors.primary,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _summaryTile('CARGA', '3.8k kg',
-                          color: AppColors.secondaryLight),
+                      child: _summaryTile(
+                        'CARGA',
+                        '3.8k kg',
+                        color: AppColors.secondaryLight,
+                      ),
                     ),
                   ],
                 ),
@@ -1383,7 +1552,8 @@ class _EntrenarViewState extends State<EntrenarView> {
                         style: OutlinedButton.styleFrom(
                           backgroundColor: AppColors.surface,
                           side: const BorderSide(
-                              color: AppColors.surfaceHighest),
+                            color: AppColors.surfaceHighest,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999),
                           ),
@@ -1417,10 +1587,12 @@ class _EntrenarViewState extends State<EntrenarView> {
       ),
       child: Column(
         children: [
-          Text(label, style: AppText.labelSm(size: 10, weight: FontWeight.w700)),
+          Text(
+            label,
+            style: AppText.labelSm(size: 10, weight: FontWeight.w700),
+          ),
           const SizedBox(height: 2),
-          Text(value,
-              style: AppText.metric(color: color, size: 18)),
+          Text(value, style: AppText.metric(color: color, size: 18)),
         ],
       ),
     );
