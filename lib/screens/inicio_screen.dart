@@ -43,31 +43,34 @@ class _InicioViewState extends State<InicioView> {
 
   @override
   Widget build(BuildContext context) {
-    return ContentShell(
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          topInset(context) + 12,
-          20,
-          bottomInset(context),
-        ),
-        children: [
-          if (_showNotificationToast) ...[
-            _reminderBanner(),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ContentShell(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            topInset(context) + 12,
+            20,
+            bottomInset(context),
+          ),
+          children: [
+            if (_showNotificationToast) ...[
+              _reminderBanner(),
+              const SizedBox(height: 16),
+            ],
+            _greeting(),
             const SizedBox(height: 16),
+            _weeklyStreak(),
+            const SizedBox(height: 16),
+            _featuredRoutine(),
+            const SizedBox(height: 16),
+            _dailyMetrics(),
+            const SizedBox(height: 16),
+            _nutriBanner(),
+            const SizedBox(height: 16),
+            _mythBuster(),
           ],
-          _greeting(),
-          const SizedBox(height: 16),
-          _weeklyStreak(),
-          const SizedBox(height: 16),
-          _featuredRoutine(),
-          const SizedBox(height: 16),
-          _dailyMetrics(),
-          const SizedBox(height: 16),
-          _nutriBanner(),
-          const SizedBox(height: 16),
-          _mythBuster(),
-        ],
+        ),
       ),
     );
   }

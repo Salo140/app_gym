@@ -24,21 +24,24 @@ class _PerfilViewState extends State<PerfilView> {
 
   @override
   Widget build(BuildContext context) {
-    return ContentShell(
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          topInset(context) + 8,
-          20,
-          bottomInset(context),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ContentShell(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            topInset(context) + 8,
+            20,
+            bottomInset(context),
+          ),
+          children: [
+            _profileCard(),
+            const SizedBox(height: 16),
+            _routineCard(),
+            const SizedBox(height: 16),
+            _preferencesCard(),
+          ],
         ),
-        children: [
-          _profileCard(),
-          const SizedBox(height: 16),
-          _routineCard(),
-          const SizedBox(height: 16),
-          _preferencesCard(),
-        ],
       ),
     );
   }
