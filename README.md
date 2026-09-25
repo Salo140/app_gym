@@ -15,99 +15,23 @@ Programación Móvil (IF2004), grupo 601
 
 1.0, septiembre de 2026
 
-## Tabla de contenido
+## Documentación
 
-1. Descripción general
-2. Problema
-3. Objetivos
-4. Stakeholders, actores y roles
-5. Alcance
-6. Funcionalidades
-7. Requisitos funcionales
-8. Requisitos no funcionales
-9. Reglas de negocio
-10. Modelo de datos
-11. Pantallas y navegación
-12. Mockup
-13. Historias de usuario, casos de uso, restricciones y supuestos
-14. Arquitectura y navegación implementada
-15. Historial de cambios
-16. Referencias
-17. Declaración de uso de inteligencia artificial
+La definición formal, el alcance, los requisitos, las pantallas y el mapa de navegación están en [docs/definicion.md](docs/definicion.md). El documento es la fuente de verdad del entregable 1.
 
-## 1. Descripción general
+Los mockups por pantalla se encuentran en `docs/mockup/`.
 
-GymMate es una aplicación móvil que acompaña al usuario en la organización de sus entrenamientos y en el aprendizaje básico sobre alimentación. Integra rutinas, ejercicios, registro de sesiones, seguimiento del progreso y el módulo educativo NutriGuía.
+La presentación para sustentación está en [docs/presentacion/index.html](docs/presentacion/index.html). Ábrela en un navegador y usa las flechas del teclado para avanzar.
 
-## 2. Problema
+## Ejecutar
 
-Las personas que comienzan a entrenar suelen tener dificultades para organizar rutinas, ejecutar ejercicios, registrar sus avances y relacionar su alimentación con sus objetivos. GymMate reúne orientación básica y registro en una experiencia sencilla, sin reemplazar a profesionales de la salud.
+```sh
+flutter pub get
+flutter run
+```
 
-## 3. Objetivos
+## Navegación disponible
 
-### 3.1 Objetivo general
+La app inicia en acceso/registro demostrativo. Al ingresar se llega al shell principal con Inicio, Entrenar, NutriGuía, Progreso y Perfil. Desde Entrenar se puede abrir el detalle de una categoría o crear un plan y ver su resumen.
 
-Ayudar a las personas a organizar y realizar sus entrenamientos, registrar su progreso y adquirir conocimientos básicos sobre alimentación.
-
-### 3.2 Objetivos específicos
-
-- Facilitar la organización de rutinas.
-- Explicar ejercicios y ofrecer alternativas según el equipo disponible.
-- Registrar entrenamientos y mostrar el progreso.
-- Presentar educación alimentaria general e ideas de comidas.
-
-## 4. Stakeholders, actores y roles
-
-Los stakeholders son usuarios principiantes, usuarios intermedios y avanzados, entrenadores, profesionales de nutrición, equipo desarrollador, universidad y docentes. El actor principal es el usuario; el sistema gestiona perfiles, rutinas, registros, progreso y contenidos.
-
-## 5. Alcance
-
-El alcance detallado, incluidos los módulos incluidos y excluidos, se encuentra en [docs/alcance.md](docs/alcance.md).
-
-## 6. Funcionalidades
-
-Registro e inicio de sesión, configuración de perfil, rutinas, búsqueda y detalle de ejercicios, alternativas, entrenamiento activo, temporizador, historial, progreso, logros y NutriGuía.
-
-## 7. Requisitos funcionales
-
-Los requisitos funcionales RF01 a RF10 están definidos en [docs/alcance.md](docs/alcance.md#requisitos-funcionales).
-
-## 8. Requisitos no funcionales
-
-Los requisitos de usabilidad, consistencia, privacidad, mantenibilidad y plataforma están definidos en [docs/alcance.md](docs/alcance.md#requisitos-no-funcionales).
-
-## 9. Reglas de negocio
-
-El usuario debe estar registrado y tener un perfil básico para utilizar las funciones principales. Los registros pertenecen a su usuario, las rutinas contienen ejercicios y los entrenamientos finalizados se conservan en el historial. La información nutricional es educativa y general.
-
-## 10. Modelo de datos
-
-Las entidades Usuario, Perfil, Rutina, Ejercicio, Entrenamiento, Registro, Alimento, Comida y Logro, junto con sus relaciones, están descritas en [docs/alcance.md](docs/alcance.md#modelo-de-datos).
-
-## 11. Pantallas y navegación
-
-El flujo contempla Splash, Registro/Login, configuración de perfil, Inicio, Entrenar, Rutinas, Ejercicios, Detalle de ejercicio, Entrenamiento activo, NutriGuía, Arma tu plato, Progreso y Perfil. La barra principal será: Inicio | Entrenar | NutriGuía | Progreso | Perfil.
-
-## 12. Mockup
-
-La propuesta de pantallas y los contenidos esperados de cada vista se encuentran en [docs/alcance.md](docs/alcance.md#propuestas-de-diseno-y-mockups).
-
-## 13. Historias de usuario, casos de uso, restricciones y supuestos
-
-Las historias HU01 a HU15, los casos de uso, las restricciones y los supuestos funcionales están documentados en [docs/alcance.md](docs/alcance.md).
-
-## 14. Arquitectura y navegación implementada
-
-La arquitectura por capas y el estado de implementación se describen en [docs/alcance.md](docs/alcance.md#arquitectura-y-navegación-implementada). El proyecto utiliza Flutter.
-
-## 15. Historial de cambios
-
-El historial se mantiene en [docs/alcance.md](docs/alcance.md#historial-de-cambios) y en el historial de Git del proyecto.
-
-## 16. Referencias
-
-Las referencias de Flutter, Material Design y actividad física se encuentran en [docs/alcance.md](docs/alcance.md#referencias).
-
-## 17. Declaración de uso de inteligencia artificial
-
-La declaración sobre el uso responsable de inteligencia artificial se encuentra en [docs/alcance.md](docs/alcance.md#declaración-de-uso-de-inteligencia-artificial).
+Los datos son de demostración y todavía no se conservan al cerrar la aplicación.

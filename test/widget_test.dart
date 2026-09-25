@@ -4,10 +4,33 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:proyecto_pm/models/workout_plan.dart';
 import 'package:proyecto_pm/screens/entrenar_screen.dart';
 import 'package:proyecto_pm/screens/category_detail_screen.dart';
+import 'package:proyecto_pm/screens/login_screen.dart';
 import 'package:proyecto_pm/screens/plan_form_screen.dart';
 import 'package:proyecto_pm/screens/plan_summary_screen.dart';
+import 'package:proyecto_pm/widgets/plan_components.dart';
 
 void main() {
+  testWidgets('valida el acceso antes de continuar', (tester) async {
+    var didLogin = false;
+    await tester.pumpWidget(
+      MaterialApp(home: LoginScreen(onLogin: (_) => didLogin = true)),
+    );
+
+    await tester.tap(find.text('Iniciar sesión'));
+    await tester.pump();
+
+    expect(find.text('Ingresa un correo válido'), findsOneWidget);
+    expect(find.text('Usa al menos 6 caracteres'), findsOneWidget);
+    expect(didLogin, isFalse);
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'gym@example.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'gymmate1');
+    await tester.tap(find.text('Iniciar sesión'));
+    await tester.pump();
+
+    expect(didLogin, isTrue);
+  });
+
   testWidgets('integra planes dentro de Entrenar', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -39,6 +62,27 @@ void main() {
 
     expect(find.text('Rutina recomendada'), findsOneWidget);
     expect(find.text('Sesion equilibrada'), findsOneWidget);
+  });
+
+  testWidgets('pasa la categoria seleccionada al detalle', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: EntrenarView(onTabSelected: _noop)),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byType(FeatureCard).first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('Rutina recomendada'), findsOneWidget);
+    final detail = tester.widget<CategoryDetailScreen>(
+      find.byType(CategoryDetailScreen),
+    );
+    expect(detail.category.name, 'Fuerza');
   });
 
   testWidgets('bloquea el formulario de planes si es invalido', (tester) async {

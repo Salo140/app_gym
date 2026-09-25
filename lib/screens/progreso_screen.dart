@@ -125,33 +125,36 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   @override
   Widget build(BuildContext context) {
-    return ContentShell(
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          topInset(context) + 8,
-          20,
-          bottomInset(context),
-        ),
-        children: [
-          _header(),
-          const SizedBox(height: 16),
-          _keyMetrics(),
-          const SizedBox(height: 16),
-          _volumeChart(),
-          const SizedBox(height: 16),
-          _personalRecords(),
-          const SizedBox(height: 16),
-          _badges(),
-          const SizedBox(height: 16),
-          _history(),
-          const SizedBox(height: 20),
-          PrimaryButton(
-            label: 'Compartir Resumen de Medallas',
-            icon: Symbols.share,
-            onPressed: _openShareDialog,
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ContentShell(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            topInset(context) + 8,
+            20,
+            bottomInset(context),
           ),
-        ],
+          children: [
+            _header(),
+            const SizedBox(height: 16),
+            _keyMetrics(),
+            const SizedBox(height: 16),
+            _volumeChart(),
+            const SizedBox(height: 16),
+            _personalRecords(),
+            const SizedBox(height: 16),
+            _badges(),
+            const SizedBox(height: 16),
+            _history(),
+            const SizedBox(height: 20),
+            PrimaryButton(
+              label: 'Compartir Resumen de Medallas',
+              icon: Symbols.share,
+              onPressed: _openShareDialog,
+            ),
+          ],
+        ),
       ),
     );
   }

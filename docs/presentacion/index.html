@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101418">
+    <title>GymMate | Sustentación del proyecto</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #101418;
+        --surface: #1c2024;
+        --surface-raised: #262a2f;
+        --ink: #e0e3e8;
+        --muted: #bacbb9;
+        --green: #00e676;
+        --green-soft: #75ff9e;
+        --orange: #fd9000;
+        --aqua: #71fdbf;
+        --line: #31353a;
+        --display: "Trebuchet MS", "Segoe UI", sans-serif;
+        --body: "Segoe UI", "Trebuchet MS", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; }
+      body {
+        overflow: hidden;
+        background-color: var(--bg);
+        background-image: radial-gradient(#353c3e 0.65px, transparent 0.65px);
+        background-size: 18px 18px;
+        color: var(--ink);
+        font-family: var(--body);
+      }
+      button { color: inherit; font: inherit; }
+      .deck { width: 100%; height: 100%; display: grid; place-items: center; padding: 28px; }
+      .slide {
+        display: none;
+        position: relative;
+        width: min(1200px, calc(100vw - 56px));
+        height: min(675px, calc(100vh - 92px));
+        min-height: 420px;
+        overflow: hidden;
+        padding: clamp(28px, 5vw, 72px);
+        border: 1px solid var(--line);
+        background: rgba(16, 20, 24, 0.97);
+        animation: enter 300ms ease-out both;
+      }
+      .slide.active { display: flex; flex-direction: column; }
+      @keyframes enter {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .eyebrow, .kicker, .meta, .footnote { color: var(--green-soft); font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1, h2, h3 { font-family: var(--display); }
+      h1 { max-width: 800px; margin: 16px 0; font-size: clamp(48px, 8vw, 96px); line-height: 0.98; }
+      h2 { margin: 12px 0 24px; font-size: clamp(32px, 4.2vw, 54px); line-height: 1.05; }
+      h3 { margin-bottom: 8px; font-size: 20px; }
+      p, li { color: var(--muted); font-size: clamp(16px, 1.6vw, 21px); line-height: 1.5; }
+      strong { color: var(--ink); }
+      .accent { color: var(--green); }
+      .subhead { max-width: 640px; font-size: clamp(19px, 2.2vw, 28px); }
+      .cover { justify-content: center; }
+      .cover::after {
+        content: ""; position: absolute; right: -40px; bottom: -140px;
+        width: 460px; height: 460px; border: 1px solid #3b4940;
+        border-radius: 50%; box-shadow: 0 0 0 35px var(--bg), 0 0 0 36px #25352c, 0 0 0 78px var(--bg), 0 0 0 79px #25352c;
+        pointer-events: none;
+      }
+      .cover-mark { display: inline-grid; place-items: center; width: 54px; height: 54px; margin-bottom: 28px; border: 1px solid #337d52; color: var(--green); font-size: 28px; }
+      .cover-meta { margin-top: 24px; }
+      .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; flex: 1; min-height: 0; }
+      .columns.wide-left { grid-template-columns: 1.25fr 0.75fr; }
+      .columns.wide-right { grid-template-columns: 0.78fr 1.22fr; }
+      .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+      .stat { border-top: 2px solid var(--green); padding: 14px 0 0; }
+      .stat strong { display: block; color: var(--green-soft); font-family: var(--display); font-size: 34px; }
+      .stat span { color: var(--muted); font-size: 13px; }
+      .list { padding-left: 20px; margin: 0; }
+      .list li { margin: 10px 0; }
+      .image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; }
+      .phone { width: 100%; max-height: 430px; object-fit: contain; object-position: center; background: #080a0c; border: 1px solid #3a4145; }
+      .phone.tall { max-height: 490px; }
+      .caption { margin-top: 10px; color: var(--muted); font-size: 13px; }
+      .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+      .flow-step { min-height: 105px; border-top: 2px solid var(--green); padding: 13px 10px 8px 0; }
+      .flow-step:nth-child(3n + 2) { border-color: var(--orange); }
+      .flow-step:nth-child(3n) { border-color: var(--aqua); }
+      .flow-step small { color: var(--muted); font-size: 11px; }
+      .flow-step b { display: block; margin: 6px 0; font-family: var(--display); font-size: 17px; }
+      .flow-step span { color: var(--muted); font-size: 12px; }
+      .columns-code { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      .code-line { border-left: 2px solid var(--green); padding: 5px 0 5px 12px; color: var(--muted); font-size: 15px; }
+      .code-line code { color: var(--green-soft); font-size: 13px; }
+      .demo-list { counter-reset: demo; padding: 0; list-style: none; }
+      .demo-list li { display: flex; gap: 16px; align-items: baseline; border-bottom: 1px solid var(--line); padding: 10px 0; }
+      .demo-list li::before { counter-increment: demo; content: "0" counter(demo); color: var(--green); font-family: var(--display); font-weight: 700; }
+      .question { border-left: 3px solid var(--orange); padding: 8px 0 8px 18px; }
+      .controls { position: fixed; right: 28px; bottom: 20px; z-index: 5; display: flex; gap: 8px; align-items: center; }
+      .controls button { width: 42px; height: 42px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 20px; }
+      .controls button:hover, .controls button:focus-visible { border-color: var(--green); outline: none; }
+      .counter { min-width: 60px; color: var(--muted); text-align: center; font-size: 12px; }
+      .progress { position: fixed; right: 0; bottom: 0; left: 0; height: 3px; background: #252a2d; }
+      .progress span { display: block; width: 10%; height: 100%; background: var(--green); transition: width 220ms ease; }
+      .timing { position: absolute; top: 32px; right: 34px; color: #859585; font-size: 11px; }
+      .footer-mark { position: absolute; bottom: 28px; left: 34px; color: #738174; font-size: 11px; }
+      @media (max-width: 700px) {
+        .deck { padding: 12px; }
+        .slide { width: calc(100vw - 24px); height: calc(100vh - 78px); min-height: 0; padding: 28px 24px 54px; overflow-y: auto; }
+        .columns, .columns.wide-left, .columns.wide-right { grid-template-columns: 1fr; gap: 18px; }
+        .image-pair { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .phone { max-height: 260px; }
+        .flow { grid-template-columns: 1fr 1fr; }
+        .flow-step { min-height: 82px; }
+        .timing { top: 14px; right: 18px; }
+        .footer-mark { bottom: 14px; left: 24px; }
+        .controls { right: 14px; bottom: 8px; }
+        .controls button { width: 36px; height: 36px; }
+      }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+    </style>
+  </head>
+  <body>
+    <main class="deck" aria-live="polite">
+      <section class="slide active cover" data-time="30 s · Apertura">
+        <span class="cover-mark" aria-hidden="true">+</span>
+        <span class="eyebrow">Programación Móvil · IF2004 · Grupo 601</span>
+        <h1>Gym<span class="accent">Mate</span></h1>
+        <p class="subhead">Entrenamiento con guía. Alimentación con criterio.</p>
+        <p class="cover-meta">Vanessa Ospina · Salome Caicedo<br>Entregable 1 · 26 de septiembre de 2026</p>
+        <span class="footer-mark">DEFINICIÓN DEL PROYECTO</span>
+      </section>
+
+      <section class="slide" data-time="1 min · No técnica">
+        <span class="eyebrow">01 / El problema</span>
+        <h2>Empezar a entrenar no debería sentirse como adivinar.</h2>
+        <div class="columns wide-left">
+          <div>
+            <p>Una persona puede no saber <strong>qué ejercicio hacer, cómo registrar una serie o cómo reconocer su progreso</strong>. A la vez, encuentra consejos de alimentación que se contradicen.</p>
+            <p>GymMate reúne una guía práctica para acompañar la sesión y un espacio educativo en el mismo teléfono.</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><strong>1 lugar</strong><span>rutina, registro y aprendizaje</span></div>
+            <div class="stat"><strong>Móvil</strong><span>disponible durante el entrenamiento</span></div>
+            <div class="stat"><strong>Claro</strong><span>para principiantes e intermedios</span></div>
+            <div class="stat"><strong>Educativo</strong><span>no reemplaza profesionales</span></div>
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min · No técnica">
+        <span class="eyebrow">02 / La propuesta</span>
+        <h2>Una experiencia de entrenamiento de principio a fin.</h2>
+        <div class="flow">
+          <div class="flow-step"><small>01</small><b>Organiza</b><span>Rutinas y planes personales.</span></div>
+          <div class="flow-step"><small>02</small><b>Entrena</b><span>Series, carga y descanso.</span></div>
+          <div class="flow-step"><small>03</small><b>Aprende</b><span>NutriGuía y grupos de alimentos.</span></div>
+          <div class="flow-step"><small>04</small><b>Registra</b><span>Historial de sesiones.</span></div>
+          <div class="flow-step"><small>05</small><b>Revisa</b><span>Progreso, métricas y logros.</span></div>
+          <div class="flow-step"><small>06</small><b>Adapta</b><span>Alternativas según el equipo.</span></div>
+        </div>
+        <p class="footnote">La app informa y acompaña; no diagnostica ni prescribe.</p>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min · No técnica">
+        <span class="eyebrow">03 / Objetivos y éxito</span>
+        <h2>Mediremos si las personas pueden usarla sin ayuda.</h2>
+        <div class="columns wide-right">
+          <ul class="list">
+            <li><strong>80 %</strong> inicia una rutina sin ayuda.</li>
+            <li><strong>80 %</strong> registra correctamente una serie.</li>
+            <li>Encuentra un ejercicio en <strong>menos de 30 segundos</strong>.</li>
+            <li><strong>80 %</strong> comprende cómo armar un plato.</li>
+          </ul>
+          <div>
+            <p>El objetivo general es ayudar a organizar entrenamientos, registrar el progreso y adquirir conocimientos básicos de alimentación.</p>
+            <p class="footnote">Estas métricas se validarán con participantes de prueba; todavía no son resultados medidos.</p>
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min 30 s · Mockup / No técnica">
+        <span class="eyebrow">04 / Alcance y mockup</span>
+        <h2>De entrar a la app a revisar el propio avance.</h2>
+        <div class="columns wide-right">
+          <div>
+            <p><strong>En el MVP:</strong> perfil, rutinas, sesión con temporizador, progreso y NutriGuía.</p>
+            <p><strong>Fuera del MVP:</strong> diagnóstico, dietas médicas, pagos, chat, dispositivos y asesoría en vivo.</p>
+            <p class="caption">Las capturas muestran el prototipo Flutter actual en tamaño móvil.</p>
+          </div>
+          <div class="image-pair">
+            <img class="phone tall" src="../mockup/p01-acceso.png" alt="Pantalla de acceso de GymMate">
+            <img class="phone tall" src="../mockup/p03-entrenar.png" alt="Pantalla de entrenamiento activo">
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min · Técnica">
+        <span class="eyebrow">05 / Mapa de navegación</span>
+        <h2>Las rutas salen del flujo de trabajo del usuario.</h2>
+        <div class="flow">
+          <div class="flow-step"><small>P-01</small><b>Acceso</b><span>Ingresar o crear cuenta.</span></div>
+          <div class="flow-step"><small>P-02</small><b>Inicio</b><span>Resumen y accesos.</span></div>
+          <div class="flow-step"><small>P-03</small><b>Entrenar</b><span>Rutina y sesión activa.</span></div>
+          <div class="flow-step"><small>P-04</small><b>Detalle</b><span>Recibe la categoría elegida.</span></div>
+          <div class="flow-step"><small>P-05 → P-06</small><b>Plan → resumen</b><span>Envía un WorkoutPlan.</span></div>
+          <div class="flow-step"><small>P-07 → P-09</small><b>Más vistas</b><span>NutriGuía, progreso y perfil.</span></div>
+        </div>
+        <p class="footnote">La barra inferior conecta Inicio, Entrenar, NutriGuía, Progreso y Perfil.</p>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min · Técnica">
+        <span class="eyebrow">06 / Decisiones técnicas</span>
+        <h2>Flutter sencillo, pantallas separadas y rutas entendibles.</h2>
+        <div class="columns-code">
+          <div>
+            <div class="code-line"><code>lib/screens/</code><br>Vistas principales y secundarias.</div>
+            <div class="code-line"><code>lib/widgets/</code><br>Componentes y navegación inferior.</div>
+            <div class="code-line"><code>lib/models/</code><br>Rutinas, ejercicios y datos de vista.</div>
+            <div class="code-line"><code>lib/data/</code><br>Datos de demostración.</div>
+          </div>
+          <div>
+            <p>Las pestañas permanecen dentro de <code>AppShell</code>. Los recorridos secundarios usan <strong><code>Navigator.push/pop</code></strong>.</p>
+            <p>El detalle recibe el <strong><code>RoutineCategory</code></strong> seleccionado; el resumen recibe el <strong><code>WorkoutPlan</code></strong> validado.</p>
+            <p class="footnote">El login y los datos son demostrativos. Persistencia y autenticación real son trabajo posterior.</p>
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="1 min · Técnica">
+        <span class="eyebrow">07 / Requerimientos y datos</span>
+        <h2>La navegación ya prueba el contrato entre pantallas.</h2>
+        <div class="columns wide-left">
+          <ul class="list">
+            <li><strong>RF-03:</strong> mostrar rutinas y detalle de categoría.</li>
+            <li><strong>RF-04:</strong> validar nombre, objetivo y frecuencia.</li>
+            <li><strong>RNF-03:</strong> permitir volver desde pantallas secundarias.</li>
+            <li><strong>RNF-04:</strong> datos por usuario; persistencia pendiente.</li>
+          </ul>
+          <div>
+            <h3>Modelo previsto</h3>
+            <p>Usuario → Perfil · Entrenamiento → Registro → Ejercicio · Comida → Alimento · Usuario → Logro</p>
+            <p class="footnote">El almacenamiento persistente se implementará en una fase posterior del MVP.</p>
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="4 min · Demo en vivo">
+        <span class="eyebrow">08 / Demostración</span>
+        <h2>Un recorrido breve por el código que sí corre.</h2>
+        <div class="columns wide-right">
+          <ol class="demo-list">
+            <li>Ingresar desde P-01 y mostrar Inicio.</li>
+            <li>Abrir Entrenar y seleccionar una categoría.</li>
+            <li>Volver y crear un plan con frecuencia.</li>
+            <li>Revisar cómo el resumen recibe el modelo.</li>
+            <li>Visitar NutriGuía y Progreso.</li>
+          </ol>
+          <div class="image-pair">
+            <img class="phone" src="../mockup/p05-crear-plan.png" alt="Formulario de creación de plan">
+            <img class="phone" src="../mockup/p06-resumen-plan.png" alt="Resumen recibido del formulario">
+          </div>
+        </div>
+        <span class="footer-mark">GYMMATE · PROYECTO MÓVIL</span>
+      </section>
+
+      <section class="slide" data-time="3 min · Preguntas">
+        <span class="eyebrow">09 / Cierre</span>
+        <h2>GymMate acompaña. El usuario decide.</h2>
+        <div class="columns wide-left">
+          <div>
+            <p>Una experiencia móvil para organizar sesiones, aprender con criterio y reconocer el progreso.</p>
+            <p class="question"><strong>Preguntas</strong><br>¿Qué decisión del proyecto les gustaría que expliquemos?</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><strong>5 min</strong><span>problema, objetivos y mockup</span></div>
+            <div class="stat"><strong>7 min</strong><span>navegación, código y demo</span></div>
+            <div class="stat"><strong>3 min</strong><span>preguntas individuales</span></div>
+            <div class="stat"><strong>15 min</strong><span>tiempo total del equipo</span></div>
+          </div>
+        </div>
+        <span class="footer-mark">VANESSA OSPINA · SALOME CAICEDO</span>
+      </section>
+    </main>
+
+    <nav class="controls" aria-label="Controles de diapositivas">
+      <button id="previous" type="button" aria-label="Diapositiva anterior" title="Anterior">←</button>
+      <span class="counter" id="counter">01 / 10</span>
+      <button id="next" type="button" aria-label="Siguiente diapositiva" title="Siguiente">→</button>
+    </nav>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+    <script>
+      const slides = [...document.querySelectorAll('.slide')];
+      const counter = document.querySelector('#counter');
+      const progress = document.querySelector('#progress');
+      let active = 0;
+
+      function showSlide(index) {
+        active = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, position) => {
+          slide.classList.toggle('active', position === active);
+          slide.setAttribute('aria-hidden', position === active ? 'false' : 'true');
+        });
+        counter.textContent = `${String(active + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+        progress.style.width = `${((active + 1) / slides.length) * 100}%`;
+        document.title = `${String(active + 1).padStart(2, '0')} · GymMate`;
+      }
+
+      document.querySelector('#previous').addEventListener('click', () => showSlide(active - 1));
+      document.querySelector('#next').addEventListener('click', () => showSlide(active + 1));
+      document.addEventListener('keydown', (event) => {
+        if (['ArrowRight', 'PageDown', ' '].includes(event.key)) {
+          event.preventDefault();
+          showSlide(active + 1);
+        }
+        if (['ArrowLeft', 'PageUp'].includes(event.key)) {
+          event.preventDefault();
+          showSlide(active - 1);
+        }
+        if (event.key === 'Home') showSlide(0);
+        if (event.key === 'End') showSlide(slides.length - 1);
+      });
+      showSlide(0);
+    </script>
+  </body>
+</html>

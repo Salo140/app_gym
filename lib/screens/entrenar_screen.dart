@@ -173,7 +173,12 @@ class _EntrenarViewState extends State<EntrenarView> {
   // --------------------------------------------------------------- build
   @override
   Widget build(BuildContext context) {
-    if (_workoutFinished) return _celebrationScreen();
+    if (_workoutFinished) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: _celebrationScreen(),
+      );
+    }
 
     final restProgress = _totalRestSeconds == 0
         ? 0.0
@@ -182,48 +187,51 @@ class _EntrenarViewState extends State<EntrenarView> {
               .clamp(0.0, 1.0)
               .toDouble();
 
-    return Stack(
-      children: [
-        Column(
-          children: [
-            SizedBox(height: topInset(context)),
-            _liveHud(),
-            Expanded(
-              child: ContentShell(
-                child: ListView(
-                  padding: EdgeInsets.fromLTRB(
-                    20,
-                    12,
-                    20,
-                    bottomInset(context) + (_showRestWidget ? 80 : 0),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              SizedBox(height: topInset(context)),
+              _liveHud(),
+              Expanded(
+                child: ContentShell(
+                  child: ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      12,
+                      20,
+                      bottomInset(context) + (_showRestWidget ? 80 : 0),
+                    ),
+                    children: [
+                      _plansSection(),
+                      const SizedBox(height: 16),
+                      _exerciseHero(),
+                      const SizedBox(height: 16),
+                      _setsSection(),
+                      const SizedBox(height: 16),
+                      _nextExerciseCard(),
+                    ],
                   ),
-                  children: [
-                    _plansSection(),
-                    const SizedBox(height: 16),
-                    _exerciseHero(),
-                    const SizedBox(height: 16),
-                    _setsSection(),
-                    const SizedBox(height: 16),
-                    _nextExerciseCard(),
-                  ],
+                ),
+              ),
+            ],
+          ),
+          if (_showRestWidget)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 448),
+                  child: _restWidget(restProgress),
                 ),
               ),
             ),
-          ],
-        ),
-        if (_showRestWidget)
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 448),
-                child: _restWidget(restProgress),
-              ),
-            ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

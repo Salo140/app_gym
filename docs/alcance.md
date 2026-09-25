@@ -1,5 +1,7 @@
 # Especificaciones del proyecto: GymMate
 
+> Borrador de alcance y notas de trabajo. La definición oficial del entregable 1, con secciones, identificadores y navegación verificados contra el código, es [docs/definicion.md](definicion.md). Si este borrador difiere, prevalece la definición oficial.
+
 ## Problema
 Muchas personas comienzan a entrenar en el gimnasio con dificultades para organizar sus entrenamientos y entender cómo llevar una alimentación adecuada de acuerdo con sus objetivos y necesidades.
 

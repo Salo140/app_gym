@@ -6,6 +6,7 @@ import 'theme/app_colors.dart';
 import 'theme/app_text.dart';
 import 'screens/entrenar_screen.dart';
 import 'screens/inicio_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/nutriguia_screen.dart';
 import 'screens/perfil_screen.dart';
 import 'screens/progreso_screen.dart';
@@ -54,7 +55,11 @@ class GymMateApp extends StatelessWidget {
           bodyMedium: AppText.bodyMd(color: AppColors.onSurface),
         ),
       ),
-      home: const AppShell(),
+      home: LoginScreen(
+        onLogin: (context) => Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(builder: (_) => const AppShell()),
+        ),
+      ),
     );
   }
 }

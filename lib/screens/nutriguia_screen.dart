@@ -41,25 +41,28 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
 
   @override
   Widget build(BuildContext context) {
-    return ContentShell(
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          topInset(context) + 8,
-          20,
-          bottomInset(context),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ContentShell(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            topInset(context) + 8,
+            20,
+            bottomInset(context),
+          ),
+          children: [
+            _headerBanner(),
+            const SizedBox(height: 16),
+            _segmentedTabs(),
+            const SizedBox(height: 16),
+            if (_tab == _SubTab.plato) ..._plateTab(),
+            if (_tab == _SubTab.aprende) ..._learnTab(),
+            if (_tab == _SubTab.mitos) ..._mythsTab(),
+            const SizedBox(height: 16),
+            _disclaimer(),
+          ],
         ),
-        children: [
-          _headerBanner(),
-          const SizedBox(height: 16),
-          _segmentedTabs(),
-          const SizedBox(height: 16),
-          if (_tab == _SubTab.plato) ..._plateTab(),
-          if (_tab == _SubTab.aprende) ..._learnTab(),
-          if (_tab == _SubTab.mitos) ..._mythsTab(),
-          const SizedBox(height: 16),
-          _disclaimer(),
-        ],
       ),
     );
   }
