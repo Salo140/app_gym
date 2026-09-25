@@ -1,4 +1,4 @@
-# Especificaciones del proyecto: Mercado Campesino Digital (lado comprador)
+# Especificaciones del proyecto: GymMate
 
 ## Problema
 Muchas personas comienzan a entrenar en el gimnasio con dificultades para organizar sus entrenamientos y entender cómo llevar una alimentación adecuada de acuerdo con sus objetivos y necesidades.
@@ -7,7 +7,7 @@ Los principiantes pueden no saber qué ejercicios realizar, cómo ejecutarlos co
 
 La alimentación también representa una dificultad frecuente, ya que existe mucha información contradictoria sobre qué comer, qué alimentos elegir, cómo organizar las comidas y cómo relacionar la alimentación con la actividad física.
 
-"Nombre aplicación" busca solucionar estas necesidades mediante una aplicación móvil que integre entrenamiento y educación alimentaria en un mismo lugar. La aplicación permitirá al usuario consultar y realizar rutinas, aprender sobre ejercicios, registrar sus entrenamientos, visualizar su progreso y acceder a herramientas educativas que le ayuden a comprender cómo construir comidas variadas de acuerdo con sus preferencias y objetivos.
+GymMate busca solucionar estas necesidades mediante una aplicación móvil que integre entrenamiento y educación alimentaria en un mismo lugar. La aplicación permitirá al usuario consultar y realizar rutinas, aprender sobre ejercicios, registrar sus entrenamientos, visualizar su progreso y acceder a herramientas educativas que le ayuden a comprender cómo construir comidas variadas de acuerdo con sus preferencias y objetivos.
 
 La aplicación tendrá un enfoque educativo y de acompañamiento, por lo que no pretende sustituir la orientación de entrenadores, nutricionistas o profesionales de la salud.
 
@@ -190,14 +190,449 @@ Seguimiento médico.
 Funcionalidades avanzadas de inteligencia artificial.
 
 Estas funcionalidades podrán considerarse como posibles mejoras futuras.
+
 ## Conceptos del dominio
+Usuario
+
+Persona que utiliza GymMate y registra sus entrenamientos y preferencias.
+
+Perfil
+
+Información básica configurada por el usuario, incluyendo nivel, objetivos y preferencias.
+
+Objetivo
+
+Propósito seleccionado por el usuario para orientar su experiencia dentro de la aplicación.
+
+Rutina
+
+Conjunto organizado de ejercicios que el usuario puede realizar durante una sesión.
+
+Ejercicio
+
+Actividad física incluida dentro de una rutina.
+
+Serie
+
+Conjunto de repeticiones realizadas de un ejercicio.
+
+Repetición
+
+Ejecución individual de un ejercicio.
+
+Entrenamiento
+
+Sesión en la que el usuario realiza una rutina y registra sus resultados.
+
+Registro
+
+Información almacenada sobre un ejercicio realizado, como peso, repeticiones y series.
+
+Progreso
+
+Información obtenida a partir de los registros históricos del usuario para visualizar su evolución.
+
+Equipo
+
+Elemento necesario para realizar determinado ejercicio.
+
+Ejercicio alternativo
+
+Ejercicio que puede realizarse como reemplazo de otro cuando el equipo requerido no está disponible.
+
+Grupo de alimentos
+
+Categoría utilizada para organizar diferentes alimentos dentro del módulo de alimentación.
+
+Comida
+
+Combinación de diferentes alimentos seleccionados por el usuario.
+
+Contenido educativo
+
+Información presentada en la aplicación para enseñar conceptos básicos relacionados con entrenamiento y alimentación.
+
+Logro
+
+Reconocimiento obtenido por cumplir determinadas condiciones dentro de la aplicación, como completar cierta cantidad de entrenamientos.
 
 ## Reglas de negocio
+Un usuario debe estar registrado para utilizar las funcionalidades principales de la aplicación.
+
+Cada usuario debe contar con un perfil básico antes de utilizar las recomendaciones y rutinas.
+
+Una rutina debe contener al menos un ejercicio.
+
+Un ejercicio puede pertenecer a diferentes rutinas.
+
+Cada entrenamiento debe estar asociado a un usuario.
+
+El usuario solamente podrá modificar sus propios registros.
+
+Cada registro de entrenamiento debe estar asociado a un ejercicio y a una sesión de entrenamiento.
+
+Un ejercicio puede tener una o varias alternativas.
+
+Las alternativas de ejercicios deben considerar el equipo disponible.
+
+Un entrenamiento debe conservarse en el historial una vez que haya sido finalizado.
+
+Los logros se desbloquearán cuando el usuario cumpla las condiciones establecidas por el sistema.
+
+Los contenidos de alimentación deben presentarse con un enfoque educativo y general.
+
+La aplicación no debe presentar recomendaciones como sustituto de una consulta con un profesional de nutrición.
+
+El usuario podrá seleccionar diferentes alimentos para construir una comida.
+
+Una comida puede estar compuesta por alimentos pertenecientes a diferentes grupos.
+
+El usuario podrá consultar nuevamente sus registros históricos para comparar su progreso.
 
 ## Historias de usuario
+HU01 — Crear una cuenta
+
+Como usuario nuevo,
+quiero crear una cuenta,
+para guardar mi información, rutinas y progreso.
+
+HU02 — Configurar perfil
+
+Como usuario,
+quiero seleccionar mi nivel de experiencia, objetivos y preferencias,
+para adaptar mi experiencia dentro de la aplicación.
+
+HU03 — Consultar una rutina
+
+Como usuario,
+quiero consultar una rutina de entrenamiento,
+para conocer los ejercicios que debo realizar.
+
+HU04 — Buscar ejercicio
+
+Como usuario,
+quiero buscar ejercicios por nombre, grupo muscular o equipo,
+para encontrar rápidamente el ejercicio que necesito.
+
+HU05 — Conocer un ejercicio
+
+Como usuario,
+quiero consultar información e instrucciones de un ejercicio,
+para comprender cómo realizarlo.
+
+HU06 — Sustituir ejercicio
+
+Como usuario,
+quiero encontrar alternativas para un ejercicio,
+para poder continuar mi entrenamiento cuando no tenga disponible determinado equipo.
+
+HU07 — Iniciar entrenamiento
+
+Como usuario,
+quiero iniciar una rutina,
+para realizar mi entrenamiento de manera organizada.
+
+HU08 — Registrar entrenamiento
+
+Como usuario,
+quiero registrar las series, repeticiones y peso utilizados,
+para conservar un historial de mis entrenamientos.
+
+HU09 — Utilizar temporizador
+
+Como usuario,
+quiero utilizar un temporizador de descanso,
+para organizar los intervalos entre mis series.
+
+HU10 — Consultar progreso
+
+Como usuario,
+quiero visualizar mi historial y estadísticas,
+para conocer mi evolución.
+
+HU11 — Aprender sobre alimentación
+
+Como usuario,
+quiero consultar información sencilla sobre alimentación,
+para comprender mejor cómo organizar mis comidas.
+
+HU12 — Construir una comida
+
+Como usuario,
+quiero seleccionar alimentos de diferentes grupos,
+para obtener ideas de cómo combinar diferentes alimentos en una comida.
+
+HU13 — Consultar ideas de comidas
+
+Como usuario,
+quiero consultar diferentes ideas de comidas,
+para tener opciones que se adapten a mis preferencias y alimentos disponibles.
+
+HU14 — Consultar mitos y realidades
+
+Como usuario,
+quiero consultar información sobre mitos relacionados con entrenamiento y alimentación,
+para diferenciar información confiable de creencias comunes.
+
+HU15 — Obtener logros
+
+Como usuario,
+quiero obtener logros por mantener mi constancia,
+para sentirme motivado a continuar utilizando la aplicación.
 
 ## Casos de uso
+Caso de uso	                          Actor
+Registrarse	                          Usuario
+
+Iniciar sesión	                      Usuario
+
+Configurar perfil	                  Usuario
+
+Seleccionar objetivos	              Usuario
+
+Consultar rutina	                  Usuario
+
+Buscar ejercicio	                  Usuario
+
+Consultar información de ejercicio	  Usuario
+
+Consultar alternativa de ejercicio	  Usuario
+
+Iniciar entrenamiento	              Usuario
+
+Registrar serie	                      Usuario
+
+Iniciar temporizador	              Usuario
+
+Finalizar entrenamiento	              Usuario
+
+Consultar historial	                  Usuario
+
+Consultar progreso	                  Usuario
+
+Consultar logros	                  Usuario
+
+Consultar contenido de alimentación	  Usuario
+
+Consultar grupos de alimentos	      Usuario
+
+Construir una comida	              Usuario
+
+Consultar ideas de comidas	          Usuario
+
+Consultar mitos y realidades	      Usuario
 
 ## Flujo de pantallas
+El flujo principal de la aplicación será:
+
+                         SPLASH
+                           │
+                           ↓
+                  REGISTRO / LOGIN
+                           │
+                           ↓
+                 CONFIGURAR PERFIL
+                           │
+                           ↓
+                         HOME
+                           │
+          ┌────────────────┼────────────────┐
+          ↓                ↓                ↓
+      ENTRENAR         NUTRIGUÍA         PROGRESO
+          │                │                │
+          ↓                ↓                ↓
+       RUTINAS          APRENDER        HISTORIAL
+          │                │             ESTADÍSTICAS
+          ↓                ↓
+      EJERCICIOS       GRUPOS DE
+          │            ALIMENTOS
+          ↓                │
+    DETALLE EJERCICIO      ↓
+          │             ARMAR PLATO
+          ↓                │
+   ALTERNATIVAS            ↓
+          │            IDEAS DE COMIDA
+          ↓
+     ENTRENAMIENTO
+          │
+          ↓
+   REGISTRAR SERIES
+          │
+          ↓
+      TEMPORIZADOR
+          │
+          ↓
+  SIGUIENTE EJERCICIO
+          │
+          ↓
+   FINALIZAR SESIÓN
+          │
+          ↓
+       RESUMEN
+          │
+          ↓
+     ACTUALIZAR
+       PROGRESO
+
+Navegación principal:
+
+La aplicación contará con una barra de navegación inferior:
+
+Inicio | Entrenar | NutriGuía | Progreso | Perfil
 
 ## Propuestas de diseno y mockups
+La interfaz tendrá un diseño sencillo, moderno y fácil de utilizar, dirigido tanto a personas que están comenzando a entrenar como a usuarios con experiencia.
+
+Se buscará evitar una interfaz excesivamente compleja y presentar la información de manera visual y organizada.
+
+Pantallas principales
+1. Splash
+
+Presentará el logo y nombre de GymMate.
+
+2. Registro / Inicio de sesión
+
+Permitirá al usuario crear una cuenta o ingresar a una cuenta existente.
+
+3. Configuración inicial
+
+Permitirá seleccionar:
+
+Nivel de experiencia.
+Objetivos.
+Preferencias de entrenamiento.
+Preferencias generales de alimentación.
+4. Inicio
+
+Mostrará un resumen del día:
+
+Entrenamiento recomendado o programado.
+Acceso rápido a NutriGuía.
+Progreso reciente.
+Consejo educativo.
+5. Rutina
+
+Mostrará los ejercicios de la sesión actual junto con series y repeticiones.
+
+6. Detalle del ejercicio
+
+Mostrará:
+
+Nombre.
+Imagen o demostración.
+Instrucciones.
+Equipo necesario.
+Información básica.
+Ejercicios alternativos.
+7. Entrenamiento activo
+
+Permitirá registrar:
+
+Series.
+Repeticiones.
+Peso.
+Descanso.
+
+También contará con un temporizador.
+
+8. NutriGuía
+
+Contará con accesos a:
+
+Aprende sobre alimentación.
+Grupos de alimentos.
+Arma tu plato.
+Ideas de comidas.
+Mitos y realidades.
+9. Arma tu plato
+
+Permitirá seleccionar diferentes grupos de alimentos y construir una combinación de comida.
+
+10. Progreso
+
+Mostrará:
+
+Entrenamientos realizados.
+Historial.
+Estadísticas.
+Evolución de registros.
+Logros.
+11. Perfil
+
+Permitirá consultar y modificar la información básica del usuario, sus objetivos y preferencias.
+
+## Requisitos funcionales
+
+| ID | Requisito | Prioridad |
+|---|---|---|
+| RF01 | El sistema debe permitir registrar usuarios e iniciar sesión. | Alta |
+| RF02 | El sistema debe permitir configurar nivel, objetivos y preferencias. | Alta |
+| RF03 | El sistema debe mostrar rutinas y ejercicios con instrucciones, equipo y alternativas. | Alta |
+| RF04 | El sistema debe permitir iniciar, registrar y finalizar entrenamientos. | Alta |
+| RF05 | El sistema debe guardar series, repeticiones, peso, descanso e historial por usuario. | Alta |
+| RF06 | El sistema debe mostrar progreso, estadísticas básicas y logros. | Media |
+| RF07 | El sistema debe mostrar contenidos educativos de alimentación. | Alta |
+| RF08 | El sistema debe permitir construir ideas de comidas por grupos de alimentos. | Alta |
+| RF09 | El sistema debe mostrar ideas de comidas y mitos y realidades. | Media |
+| RF10 | El sistema debe permitir consultar y actualizar el perfil. | Media |
+
+## Requisitos no funcionales
+
+| ID | Requisito |
+|---|---|
+| RNF01 | La aplicación debe funcionar como aplicación móvil desarrollada con Flutter. |
+| RNF02 | La interfaz debe ser clara, consistente, accesible y usable sin conocimientos previos. |
+| RNF03 | Cada usuario solo debe poder consultar y modificar sus propios registros. |
+| RNF04 | La información debe conservarse de forma consistente al finalizar un entrenamiento. |
+| RNF05 | Las pantallas principales deben responder en un tiempo adecuado para una interacción normal. |
+| RNF06 | El código debe mantenerse versionado en Git y el proyecto debe conservar una estructura mantenible. |
+| RNF07 | Los contenidos de alimentación deben incluir un aviso de carácter educativo y general. |
+
+## Modelo de datos
+
+Entidades principales:
+
+| Entidad | Datos principales | Relaciones |
+|---|---|---|
+| Usuario | id, correo, credenciales | Tiene un perfil, entrenamientos y logros. |
+| Perfil | nivel, objetivos, preferencias | Pertenece a un usuario. |
+| Rutina | id, nombre, descripción | Contiene uno o más ejercicios. |
+| Ejercicio | id, nombre, grupo muscular, equipo, instrucciones | Puede pertenecer a varias rutinas y tener alternativas. |
+| Entrenamiento | id, usuario, rutina, fecha, duración, estado | Contiene registros de ejercicios. |
+| Registro | id, ejercicio, series, repeticiones, peso, descanso | Pertenece a un entrenamiento. |
+| Alimento | id, nombre, grupo | Puede formar parte de una comida. |
+| Comida | id, usuario, selección de alimentos | Está compuesta por alimentos de uno o varios grupos. |
+| Logro | id, nombre, condición, fecha | Se asigna a un usuario cuando cumple una condición. |
+
+## Arquitectura y navegación implementada
+
+La aplicación seguirá una arquitectura por capas para separar la interfaz, la lógica de presentación y el acceso a datos:
+
+- Presentación: pantallas y widgets Flutter.
+- Dominio: entidades, reglas de negocio y casos de uso.
+- Datos: repositorios y fuentes de datos locales o remotas.
+
+La navegación principal será `Inicio`, `Entrenar`, `NutriGuía`, `Progreso` y `Perfil`. La implementación se completará de forma incremental según las prioridades del MVP; este documento describe el comportamiento objetivo y no implica que todas las pantallas estén terminadas.
+
+## Supuestos
+
+- El usuario cuenta con un dispositivo móvil compatible con Flutter y conexión cuando la fuente de datos lo requiera.
+- Los ejercicios, alimentos y contenidos iniciales serán cargados por el equipo del proyecto.
+- Las recomendaciones se mostrarán como información general y no como planes personalizados.
+- El MVP prioriza el registro manual de entrenamientos; no depende de sensores ni reconocimiento por cámara.
+
+## Historial de cambios
+
+
+
+## Referencias
+
+- Flutter Documentation: https://docs.flutter.dev/
+- Material Design: https://m3.material.io/
+- Organización Mundial de la Salud, actividad física: https://www.who.int/news-room/fact-sheets/detail/physical-activity
+
+Las referencias se utilizarán como apoyo general para el diseño y los contenidos educativos. No sustituyen la revisión de profesionales de salud o nutrición.
+
+## Declaración de uso de inteligencia artificial
+
+Se podrá utilizar inteligencia artificial como apoyo para generar ideas, revisar redacción, proponer estructuras y detectar errores durante el desarrollo. El equipo será responsable de verificar, adaptar y aprobar todo el contenido y código utilizado. No se incorporarán respuestas generadas automáticamente como diagnóstico médico, tratamiento nutricional ni recomendación profesional personalizada.
