@@ -129,45 +129,53 @@ class _AppShellState extends State<AppShell> {
         index: _activeTab.index,
         children: _buildViews(),
       ),
-      bottomNavigationBar: SizedBox(
-        height: 68,
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          iconSize: 20,
-          selectedFontSize: 10,
-          unselectedFontSize: 9,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.onSurfaceVariant,
-          backgroundColor: AppColors.surfaceLow,
-          currentIndex: _activeTab.index,
-          onTap: (index) => _setTab(TabType.values[index]),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Inicio',
+      bottomNavigationBar: Container(
+        color: AppColors.background,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
+            child: SizedBox(
+              height: 68,
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                iconSize: 20,
+                selectedFontSize: 10,
+                unselectedFontSize: 9,
+                selectedItemColor: AppColors.primary,
+                unselectedItemColor: AppColors.onSurfaceVariant,
+                backgroundColor: AppColors.surfaceLow,
+                currentIndex: _activeTab.index,
+                onTap: (index) => _setTab(TabType.values[index]),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: 'Inicio',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.fitness_center_outlined),
+                    activeIcon: Icon(Icons.fitness_center),
+                    label: 'Entrenar',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.eco_outlined),
+                    activeIcon: Icon(Icons.eco),
+                    label: 'NutriGuía',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.show_chart),
+                    activeIcon: Icon(Icons.show_chart),
+                    label: 'Progreso',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: 'Perfil',
+                  ),
+                ],
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fitness_center_outlined),
-              activeIcon: Icon(Icons.fitness_center),
-              label: 'Entrenar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.eco_outlined),
-              activeIcon: Icon(Icons.eco),
-              label: 'NutriGuía',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.show_chart),
-              activeIcon: Icon(Icons.show_chart),
-              label: 'Progreso',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Perfil',
-            ),
-          ],
+          ),
         ),
       ),
     );
