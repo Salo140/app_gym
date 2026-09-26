@@ -4,7 +4,6 @@ import '../models/workout_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
-import 'plan_summary_screen.dart';
 
 class PlanFormScreen extends StatefulWidget {
   const PlanFormScreen({super.key});
@@ -27,17 +26,21 @@ class _PlanFormScreenState extends State<PlanFormScreen> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => PlanSummaryScreen(
-          plan: WorkoutPlan(
-            name: _nameController.text.trim(),
-            goal: _goal!,
-            days: _days!,
-          ),
+    _openSummary();
+  }
+
+  Future<void> _openSummary() async {
+    final result = await Navigator.of(context).pushNamed(
+      '/plan-summary',
+      arguments: PlanSummaryArguments(
+        plan: WorkoutPlan(
+          name: _nameController.text.trim(),
+          goal: _goal!,
+          days: _days!,
         ),
       ),
     );
+    if (mounted && result == true) Navigator.of(context).pop(true);
   }
 
   @override

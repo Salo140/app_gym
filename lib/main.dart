@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'models/models.dart';
+import 'models/workout_plan.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_text.dart';
 import 'screens/entrenar_screen.dart';
@@ -10,8 +11,10 @@ import 'screens/login_screen.dart';
 import 'screens/nutriguia_screen.dart';
 import 'screens/perfil_screen.dart';
 import 'screens/progreso_screen.dart';
+import 'screens/category_detail_screen.dart';
+import 'screens/plan_form_screen.dart';
+import 'screens/plan_summary_screen.dart';
 import 'widgets/app_header.dart';
-import 'widgets/bottom_nav.dart';
 
 void main() {
   runApp(const GymMateApp());
@@ -34,6 +37,24 @@ class GymMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'GymMate',
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginScreen(
+              onLogin: (_) => Navigator.of(context).pushNamed('/app'),
+            ),
+        '/app': (context) => const AppShell(),
+        '/plan-form': (context) => const PlanFormScreen(),
+        '/category-detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as CategoryDetailArguments;
+          return CategoryDetailScreen(category: args.category);
+        },
+        '/plan-summary': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as PlanSummaryArguments;
+          return PlanSummaryScreen(plan: args.plan);
+        },
+      },
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
@@ -53,11 +74,6 @@ class GymMateApp extends StatelessWidget {
         splashFactory: InkRipple.splashFactory,
         textTheme: TextTheme(
           bodyMedium: AppText.bodyMd(color: AppColors.onSurface),
-        ),
-      ),
-      home: LoginScreen(
-        onLogin: (context) => Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const AppShell()),
         ),
       ),
     );
@@ -87,24 +103,17 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
-  Widget _buildView() {
-    switch (_activeTab) {
-      case TabType.inicio:
-        return InicioView(
+  List<Widget> _buildViews() => [
+        InicioView(
           onTabSelected: _setTab,
           waterLitres: _waterLitres,
           onAddWater: _addWater,
-        );
-      case TabType.entrenar:
-        return EntrenarView(onTabSelected: _setTab);
-      case TabType.nutriguia:
-        return const NutriGuiaView();
-      case TabType.progreso:
-        return const ProgresoView();
-      case TabType.perfil:
-        return PerfilView(streakDays: _streakDays);
-    }
-  }
+        ),
+        EntrenarView(onTabSelected: _setTab),
+        const NutriGuiaView(),
+        const ProgresoView(),
+        PerfilView(streakDays: _streakDays),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -116,11 +125,40 @@ class _AppShellState extends State<AppShell> {
         streakDays: _streakDays,
         onTabSelected: _setTab,
       ),
-      body: _buildView(),
-      bottomNavigationBar: BottomNav(
-        activeTab: _activeTab,
-        onTabSelected: _setTab,
-        isTrainingActive: true,
+      body: IndexedStack(
+        index: _activeTab.index,
+        children: _buildViews(),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _activeTab.index,
+        onTap: (index) => _setTab(TabType.values[index]),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center_outlined),
+            activeIcon: Icon(Icons.fitness_center),
+            label: 'Entrenar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.eco_outlined),
+            activeIcon: Icon(Icons.eco),
+            label: 'NutriGuía',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.show_chart),
+            activeIcon: Icon(Icons.show_chart),
+            label: 'Progreso',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
       ),
     );
   }

@@ -11,7 +11,6 @@ import '../theme/app_text.dart';
 import '../widgets/common.dart';
 import '../widgets/plan_components.dart';
 import 'category_detail_screen.dart';
-import 'plan_form_screen.dart';
 
 /// Equivale a `EntrenarView.tsx`.
 class EntrenarView extends StatefulWidget {
@@ -291,11 +290,21 @@ class _EntrenarViewState extends State<EntrenarView> {
                 title: category.name,
                 subtitle: category.description,
                 icon: category.icon,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => CategoryDetailScreen(category: category),
-                  ),
-                ),
+                onTap: () {
+                  final routeName = ModalRoute.of(context)?.settings.name;
+                  if (routeName != '/app') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => CategoryDetailScreen(category: category),
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.of(context).pushNamed(
+                    '/category-detail',
+                    arguments: CategoryDetailArguments(category: category),
+                  );
+                },
               ),
             ),
           ),
@@ -303,9 +312,7 @@ class _EntrenarViewState extends State<EntrenarView> {
             title: 'Crear mi plan',
             subtitle: 'Personaliza objetivo y frecuencia',
             icon: Symbols.add_task,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PlanFormScreen()),
-            ),
+            onTap: () => Navigator.of(context).pushNamed('/plan-form'),
           ),
         ],
       ),

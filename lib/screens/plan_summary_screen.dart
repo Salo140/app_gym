@@ -46,8 +46,7 @@ class PlanSummaryScreen extends StatelessWidget {
             PrimaryButton(
               label: 'Volver a entrenar',
               icon: Icons.fitness_center,
-              onPressed: () =>
-                  Navigator.of(context).popUntil((route) => route.isFirst),
+                onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
         ),
