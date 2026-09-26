@@ -15,6 +15,7 @@ import 'screens/category_detail_screen.dart';
 import 'screens/plan_form_screen.dart';
 import 'screens/plan_summary_screen.dart';
 import 'widgets/app_header.dart';
+import 'widgets/bottom_nav.dart';
 
 void main() {
   runApp(const GymMateApp());
@@ -103,17 +104,24 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
-  List<Widget> _buildViews() => [
-        InicioView(
+  Widget _buildView() {
+    switch (_activeTab) {
+      case TabType.inicio:
+        return InicioView(
           onTabSelected: _setTab,
           waterLitres: _waterLitres,
           onAddWater: _addWater,
-        ),
-        EntrenarView(onTabSelected: _setTab),
-        const NutriGuiaView(),
-        const ProgresoView(),
-        PerfilView(streakDays: _streakDays),
-      ];
+        );
+      case TabType.entrenar:
+        return EntrenarView(onTabSelected: _setTab);
+      case TabType.nutriguia:
+        return const NutriGuiaView();
+      case TabType.progreso:
+        return const ProgresoView();
+      case TabType.perfil:
+        return PerfilView(streakDays: _streakDays);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,58 +133,11 @@ class _AppShellState extends State<AppShell> {
         streakDays: _streakDays,
         onTabSelected: _setTab,
       ),
-      body: IndexedStack(
-        index: _activeTab.index,
-        children: _buildViews(),
-      ),
-      bottomNavigationBar: Container(
-        color: AppColors.background,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
-            child: SizedBox(
-              height: 68,
-              child: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                iconSize: 20,
-                selectedFontSize: 10,
-                unselectedFontSize: 9,
-                selectedItemColor: AppColors.primary,
-                unselectedItemColor: AppColors.onSurfaceVariant,
-                backgroundColor: AppColors.surfaceLow,
-                currentIndex: _activeTab.index,
-                onTap: (index) => _setTab(TabType.values[index]),
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home),
-                    label: 'Inicio',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.fitness_center_outlined),
-                    activeIcon: Icon(Icons.fitness_center),
-                    label: 'Entrenar',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.eco_outlined),
-                    activeIcon: Icon(Icons.eco),
-                    label: 'NutriGuía',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.show_chart),
-                    activeIcon: Icon(Icons.show_chart),
-                    label: 'Progreso',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person),
-                    label: 'Perfil',
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      body: _buildView(),
+      bottomNavigationBar: BottomNav(
+        activeTab: _activeTab,
+        onTabSelected: _setTab,
+        isTrainingActive: true,
       ),
     );
   }
