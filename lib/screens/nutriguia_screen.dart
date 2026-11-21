@@ -2,9 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../data/repositories/nutrition_repository.dart';
+import '../data/repositories/workout_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
@@ -13,7 +16,16 @@ enum _SubTab { plato, aprende, mitos }
 
 /// Equivale a `NutriGuiaView.tsx`.
 class NutriGuiaView extends StatefulWidget {
-  const NutriGuiaView({super.key});
+  const NutriGuiaView({
+    super.key,
+    this.nutritionRepository,
+    this.workoutRepository,
+    this.ownerId,
+  });
+
+  final NutritionRepository? nutritionRepository;
+  final WorkoutRepository? workoutRepository;
+  final String? ownerId;
 
   @override
   State<NutriGuiaView> createState() => _NutriGuiaViewState();
@@ -28,10 +40,94 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
   FoodItem _fat = kFoodOptions.firstWhere((f) => f.id == 'f1');
 
   int? _openAccordion;
+  String? _plateStorageError;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlate();
+  }
+
+  Future<void> _loadPlate() async {
+    final repository = widget.workoutRepository;
+    final ownerId = widget.ownerId;
+    if (repository == null || ownerId == null) return;
+    try {
+      final values = await Future.wait([
+        repository.getPreference(ownerId, 'plate_protein'),
+        repository.getPreference(ownerId, 'plate_carb'),
+        repository.getPreference(ownerId, 'plate_veggie'),
+        repository.getPreference(ownerId, 'plate_fat'),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _protein = _foodById(values[0], _protein);
+        _carb = _foodById(values[1], _carb);
+        _veggie = _foodById(values[2], _veggie);
+        _fat = _foodById(values[3], _fat);
+      });
+    } on DatabaseException {
+      if (mounted) {
+        setState(
+          () => _plateStorageError = 'No se pudo cargar el plato guardado.',
+        );
+      }
+    }
+  }
+
+  FoodItem _foodById(String? id, FoodItem fallback) {
+    if (id == null) return fallback;
+    return kFoodOptions.firstWhere(
+      (food) => food.id == id,
+      orElse: () => fallback,
+    );
+  }
+
+  void _selectFood(FoodCategory category, FoodItem food) {
+    setState(() {
+      switch (category) {
+        case FoodCategory.protein:
+          _protein = food;
+        case FoodCategory.carb:
+          _carb = food;
+        case FoodCategory.veggie:
+          _veggie = food;
+        case FoodCategory.fat:
+          _fat = food;
+      }
+    });
+    final ownerId = widget.ownerId;
+    final repository = widget.workoutRepository;
+    if (ownerId == null || repository == null) return;
+    final key = switch (category) {
+      FoodCategory.protein => 'plate_protein',
+      FoodCategory.carb => 'plate_carb',
+      FoodCategory.veggie => 'plate_veggie',
+      FoodCategory.fat => 'plate_fat',
+    };
+    repository
+        .setPreference(ownerId, key, food.id)
+        .then(
+          (_) {
+            if (mounted) setState(() => _plateStorageError = null);
+          },
+          onError: (Object error) {
+            if (error is DatabaseException && mounted) {
+              setState(
+                () => _plateStorageError =
+                    'No se pudo guardar el alimento elegido.',
+              );
+            } else {
+              Error.throwWithStackTrace(error, StackTrace.current);
+            }
+          },
+        );
+  }
 
   int get _totalProtein =>
       _protein.protein + _carb.protein + _veggie.protein + _fat.protein;
-  int get _totalCarbs => _protein.carbs + _carb.carbs + _veggie.carbs + _fat.carbs;
+  int get _totalCarbs =>
+      _protein.carbs + _carb.carbs + _veggie.carbs + _fat.carbs;
   int get _totalFat => _protein.fat + _carb.fat + _veggie.fat + _fat.fat;
   int get _totalCalories =>
       _protein.calories + _carb.calories + _veggie.calories + _fat.calories;
@@ -82,8 +178,12 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Symbols.eco,
-                  size: 18, color: AppColors.primaryLight, fill: 1),
+              const Icon(
+                Symbols.eco,
+                size: 18,
+                color: AppColors.primaryLight,
+                fill: 1,
+              ),
               const SizedBox(width: 6),
               Text(
                 'Nutrición Sin Culpa · Enfoque Flexible',
@@ -171,12 +271,24 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
   // ---------------------------------------------------------- tab 1: plato
   List<Widget> _plateTab() {
     return [
+      if (_plateStorageError case final error?) ...[
+        Text(error, style: AppText.bodySm(color: AppColors.error, size: 12)),
+        const SizedBox(height: 8),
+      ],
+      if (widget.nutritionRepository case final repository?) ...[
+        FoodSearchPanel(repository: repository),
+        const SizedBox(height: 16),
+      ],
       SurfaceCard(
         child: Column(
           children: [
             Row(
               children: [
-                const Icon(Symbols.pie_chart, size: 20, color: AppColors.tertiary),
+                const Icon(
+                  Symbols.pie_chart,
+                  size: 20,
+                  color: AppColors.tertiary,
+                ),
                 const SizedBox(width: 8),
                 Text('Método del Plato', style: AppText.headlineSm(size: 14)),
                 const Spacer(),
@@ -211,8 +323,12 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                           weight: FontWeight.w700,
                         ),
                       ),
-                      const Icon(Symbols.water_drop,
-                          size: 13, color: AppColors.onSecondaryFixed, fill: 1),
+                      const Icon(
+                        Symbols.water_drop,
+                        size: 13,
+                        color: AppColors.onSecondaryFixed,
+                        fill: 1,
+                      ),
                     ],
                   ),
                 ],
@@ -223,18 +339,27 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
               children: [
                 Expanded(
                   child: _legendTile(
-                      AppColors.tertiary, '1/2 Fibra', _veggie.name),
+                    AppColors.tertiary,
+                    '1/2 Fibra',
+                    _veggie.name,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _legendTile(
-                      AppColors.primary, '1/4 Proteína', _protein.name,
-                      labelColor: AppColors.primaryLight),
+                    AppColors.primary,
+                    '1/4 Proteína',
+                    _protein.name,
+                    labelColor: AppColors.primaryLight,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _legendTile(
-                      AppColors.secondaryLight, '1/4 Carbos', _carb.name),
+                    AppColors.secondaryLight,
+                    '1/4 Carbos',
+                    _carb.name,
+                  ),
                 ),
               ],
             ),
@@ -253,7 +378,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         selected: _protein,
         selectedBg: AppColors.primary,
         selectedFg: AppColors.onPrimary,
-        onSelected: (f) => setState(() => _protein = f),
+        onSelected: (f) => _selectFood(FoodCategory.protein, f),
       ),
       const SizedBox(height: 12),
       _foodGroup(
@@ -265,7 +390,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         selected: _carb,
         selectedBg: AppColors.secondary,
         selectedFg: AppColors.onSecondaryContainer,
-        onSelected: (f) => setState(() => _carb = f),
+        onSelected: (f) => _selectFood(FoodCategory.carb, f),
       ),
       const SizedBox(height: 12),
       _foodGroup(
@@ -277,7 +402,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         selected: _veggie,
         selectedBg: AppColors.tertiary,
         selectedFg: AppColors.onTertiary,
-        onSelected: (f) => setState(() => _veggie = f),
+        onSelected: (f) => _selectFood(FoodCategory.veggie, f),
       ),
       const SizedBox(height: 12),
       _foodGroup(
@@ -289,13 +414,17 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         selected: _fat,
         selectedBg: AppColors.secondaryFixed,
         selectedFg: AppColors.onSecondaryFixed,
-        onSelected: (f) => setState(() => _fat = f),
+        onSelected: (f) => _selectFood(FoodCategory.fat, f),
       ),
     ];
   }
 
-  Widget _legendTile(Color dot, String label, String value,
-      {Color? labelColor}) {
+  Widget _legendTile(
+    Color dot,
+    String label,
+    String value, {
+    Color? labelColor,
+  }) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -354,8 +483,11 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                   color: AppColors.fade(AppColors.primary, 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Symbols.insights,
-                    size: 20, color: AppColors.primaryLight),
+                child: const Icon(
+                  Symbols.insights,
+                  size: 20,
+                  color: AppColors.primaryLight,
+                ),
               ),
               const SizedBox(width: 8),
               Text('Resumen Educativo', style: AppText.headlineSm()),
@@ -373,31 +505,38 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
           const SizedBox(height: 10),
           RichText(
             text: TextSpan(
-              style: AppText.bodyMd(color: AppColors.onSurface, size: 12, height: 1.6),
+              style: AppText.bodyMd(
+                color: AppColors.onSurface,
+                size: 12,
+                height: 1.6,
+              ),
               children: [
                 const TextSpan(text: 'Tu plato contiene aprox. '),
                 TextSpan(
                   text: '${_totalProtein}g proteína',
                   style: AppText.bodyMd(
-                      color: AppColors.primary,
-                      size: 12,
-                      weight: FontWeight.w700),
+                    color: AppColors.primary,
+                    size: 12,
+                    weight: FontWeight.w700,
+                  ),
                 ),
                 const TextSpan(text: ', '),
                 TextSpan(
                   text: '${_totalCarbs}g carbohidratos',
                   style: AppText.bodyMd(
-                      color: AppColors.secondaryLight,
-                      size: 12,
-                      weight: FontWeight.w700),
+                    color: AppColors.secondaryLight,
+                    size: 12,
+                    weight: FontWeight.w700,
+                  ),
                 ),
                 const TextSpan(text: ' y '),
                 TextSpan(
                   text: '${_totalFat}g grasas saludables',
                   style: AppText.bodyMd(
-                      color: AppColors.secondary,
-                      size: 12,
-                      weight: FontWeight.w700),
+                    color: AppColors.secondary,
+                    size: 12,
+                    weight: FontWeight.w700,
+                  ),
                 ),
                 const TextSpan(text: '.'),
               ],
@@ -414,7 +553,11 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Symbols.verified, size: 20, color: AppColors.tertiary),
+                const Icon(
+                  Symbols.verified,
+                  size: 20,
+                  color: AppColors.tertiary,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: RichText(
@@ -431,11 +574,11 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                         TextSpan(
                           text: _totalProtein >= 30
                               ? 'Distribución óptima para síntesis proteica y '
-                                  'reposición glucogénica tras una sesión exigente '
-                                  'de fuerza o hipertrofia.'
+                                    'reposición glucogénica tras una sesión exigente '
+                                    'de fuerza o hipertrofia.'
                               : 'Plato liviano y equilibrado, excelente para días '
-                                  'de descanso activo o entrenamiento '
-                                  'cardiovascular moderado.',
+                                    'de descanso activo o entrenamiento '
+                                    'cardiovascular moderado.',
                         ),
                       ],
                     ),
@@ -483,9 +626,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(title, style: AppText.headlineSm(size: 12)),
-              ),
+              Expanded(child: Text(title, style: AppText.headlineSm(size: 12))),
               Text(
                 hint,
                 style: AppText.labelSm(
@@ -507,14 +648,14 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 7),
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? selectedBg : AppColors.surfaceHigh,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: isSelected
-                          ? selectedBg
-                          : AppColors.surfaceHighest,
+                      color: isSelected ? selectedBg : AppColors.surfaceHighest,
                     ),
                     boxShadow: isSelected
                         ? [
@@ -537,8 +678,9 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                         style: AppText.labelMd(
                           color: isSelected ? selectedFg : AppColors.onSurface,
                           size: 12,
-                          weight:
-                              isSelected ? FontWeight.w700 : FontWeight.w600,
+                          weight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                         ),
                       ),
                     ],
@@ -578,7 +720,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         title: 'Pre-Entreno',
         leadPlain: 'Tu prioridad es ',
         leadBold: 'energía disponible',
-        leadRest: ' sin digestión pesada. Evita excesos de grasas o fibra '
+        leadRest:
+            ' sin digestión pesada. Evita excesos de grasas o fibra '
             'densa justo antes de levantar peso.',
         bullets: const [
           _Bullet(
@@ -591,7 +734,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
             icon: Symbols.check_circle,
             color: AppColors.secondaryLight,
             title: 'Comida Completa (90-120 min antes)',
-            body: 'Avena cocida con scoop de proteína o tostadas integrales '
+            body:
+                'Avena cocida con scoop de proteína o tostadas integrales '
                 'con pavo magro.',
           ),
         ],
@@ -606,21 +750,24 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         title: 'Post-Entreno',
         leadPlain: 'Tu objetivo principal es ',
         leadBold: 'reparación fibrilar y reponer glucógeno',
-        leadRest: '. No necesitas correr en 15 minutos: la consistencia diaria '
+        leadRest:
+            '. No necesitas correr en 15 minutos: la consistencia diaria '
             'del total de proteína importa más.',
         bullets: const [
           _Bullet(
             icon: Symbols.verified,
             color: AppColors.primaryLight,
             title: 'Proporción Dorada',
-            body: 'Combina 25-40g de proteína de alto valor biológico + '
+            body:
+                'Combina 25-40g de proteína de alto valor biológico + '
                 'carbohidrato de asimilación media/rápida.',
           ),
           _Bullet(
             icon: Symbols.local_drink,
             color: AppColors.primaryLight,
             title: 'Hidratación y Electrolitos',
-            body: 'Repón 500-750ml de agua por cada hora sudada; añade una '
+            body:
+                'Repón 500-750ml de agua por cada hora sudada; añade una '
                 'pizca de sal marina si el entrenamiento fue intenso.',
           ),
         ],
@@ -673,7 +820,9 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: badgeBg,
                           borderRadius: BorderRadius.circular(999),
@@ -752,8 +901,10 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Text(b.body,
-                                    style: AppText.bodySm(size: 11, height: 1.5)),
+                                Text(
+                                  b.body,
+                                  style: AppText.bodySm(size: 11, height: 1.5),
+                                ),
                               ],
                             ),
                           ),
@@ -793,7 +944,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         iconColor: AppColors.secondaryLight,
         question: '¿Los carbohidratos de noche engordan?',
         verdict: 'El reloj biológico no apaga las calorías',
-        body: 'Tu cuerpo no almacena grasa automáticamente por ser de noche. '
+        body:
+            'Tu cuerpo no almacena grasa automáticamente por ser de noche. '
             'Lo que determina el cambio de composición corporal es el balance '
             'energético total de las 24 horas y semanas completas. De hecho, '
             'cenar carbohidratos complejos puede mejorar la calidad del sueño '
@@ -806,7 +958,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         iconColor: AppColors.primaryLight,
         question: '¿La proteína daña los riñones?',
         verdict: 'Completamente seguro en personas saludables',
-        body: 'Décadas de investigación confirman que ingestas proteicas de '
+        body:
+            'Décadas de investigación confirman que ingestas proteicas de '
             '1.6g a 2.2g por kg de peso en personas sanas que entrenan fuerza '
             'NO deterioran la función renal ni hepática. El riñón simplemente '
             'se adapta filtrando de forma eficiente. Solo personas con '
@@ -819,7 +972,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
         iconColor: AppColors.tertiary,
         question: '¿Sudar más significa quemar más grasa?',
         verdict: 'Sudar es termorregulación, no lipólisis',
-        body: 'El sudor es agua y minerales excretados para enfriar la '
+        body:
+            'El sudor es agua y minerales excretados para enfriar la '
             'temperatura corporal. Forzar la sudoración con fajas plásticas o '
             'exceso de ropa solo genera deshidratación celular, calambres y '
             'disminuye tu rendimiento de fuerza, sin acelerar la pérdida de '
@@ -843,8 +997,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
       child: Column(
         children: [
           InkWell(
-            onTap: () =>
-                setState(() => _openAccordion = isOpen ? null : index),
+            onTap: () => setState(() => _openAccordion = isOpen ? null : index),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -859,10 +1012,7 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      question,
-                      style: AppText.headlineSm(size: 14),
-                    ),
+                    child: Text(question, style: AppText.headlineSm(size: 14)),
                   ),
                   AnimatedRotation(
                     turns: isOpen ? 0.5 : 0,
@@ -883,7 +1033,9 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.cardBorderSoft)),
+                border: Border(
+                  top: BorderSide(color: AppColors.cardBorderSoft),
+                ),
               ),
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -903,7 +1055,9 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                           fontSize: 10,
                           bold: true,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -945,7 +1099,10 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
             child: RichText(
               text: TextSpan(
                 style: AppText.bodySm(
-                    color: AppColors.outline, size: 11, height: 1.6),
+                  color: AppColors.outline,
+                  size: 11,
+                  height: 1.6,
+                ),
                 children: [
                   TextSpan(
                     text: 'Aviso educativo: ',
@@ -956,7 +1113,8 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
                     ),
                   ),
                   const TextSpan(
-                    text: 'GymMate promueve la educación alimentaria y hábitos '
+                    text:
+                        'GymMate promueve la educación alimentaria y hábitos '
                         'saludables sostenibles. La información y proporciones '
                         'ilustradas no constituyen una prescripción médica ni '
                         'reemplazan la consulta personalizada con un profesional '
@@ -966,6 +1124,145 @@ class _NutriGuiaViewState extends State<NutriGuiaView> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class FoodSearchPanel extends StatefulWidget {
+  const FoodSearchPanel({super.key, required this.repository});
+
+  final NutritionRepository repository;
+
+  @override
+  State<FoodSearchPanel> createState() => _FoodSearchPanelState();
+}
+
+class _FoodSearchPanelState extends State<FoodSearchPanel> {
+  final _queryController = TextEditingController();
+  FoodSearchResult? _result;
+  String? _errorMessage;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _search() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final result = await widget.repository.searchFoods(_queryController.text);
+      if (!mounted) return;
+      setState(() => _result = result);
+    } on NutritionApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _result = null;
+        _errorMessage = error.message;
+      });
+    } on DatabaseException {
+      if (!mounted) return;
+      setState(() {
+        _result = null;
+        _errorMessage = 'No se pudo leer o guardar la caché local.';
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfaceCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Catálogo de alimentos', style: AppText.headlineSm(size: 14)),
+          const SizedBox(height: 4),
+          Text(
+            'Consulta datos de Open Food Facts por cada 100 g. '
+            'La última búsqueda queda disponible sin conexión.',
+            style: AppText.bodySm(size: 11),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _queryController,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (_) => _search(),
+                  decoration: const InputDecoration(
+                    labelText: 'Buscar alimento',
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filled(
+                tooltip: 'Buscar alimentos',
+                onPressed: _isLoading ? null : _search,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Symbols.search),
+              ),
+            ],
+          ),
+          if (_errorMessage case final message?) ...[
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: AppText.bodySm(color: AppColors.error, size: 12),
+            ),
+          ],
+          if (_result case final result?) ...[
+            const SizedBox(height: 8),
+            Text(
+              result.isCached
+                  ? 'Sin conexión · resultados guardados en el dispositivo'
+                  : 'Datos recibidos de Open Food Facts',
+              style: AppText.labelSm(
+                color: result.isCached
+                    ? AppColors.secondaryLight
+                    : AppColors.primaryLight,
+                size: 10,
+                letterSpacing: 0,
+              ),
+            ),
+            ...result.foods.map(
+              (food) => ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  food.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.bodySm(
+                    color: AppColors.onSurface,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  '${food.calories.round()} kcal · P ${food.protein.toStringAsFixed(1)} g · '
+                  'C ${food.carbohydrates.toStringAsFixed(1)} g · '
+                  'G ${food.fat.toStringAsFixed(1)} g'
+                  '${food.brand == null || food.brand!.isEmpty ? '' : ' · ${food.brand}'}',
+                  style: AppText.bodySm(size: 10),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -995,9 +1292,16 @@ class _PlatePainter extends CustomPainter {
     final scale = size.width / 200;
 
     // Base del plato
-    canvas.drawCircle(center, 92 * scale, Paint()..color = AppColors.surfaceHigh);
     canvas.drawCircle(
-        center, 86 * scale, Paint()..color = AppColors.surfaceLowest);
+      center,
+      92 * scale,
+      Paint()..color = AppColors.surfaceHigh,
+    );
+    canvas.drawCircle(
+      center,
+      86 * scale,
+      Paint()..color = AppColors.surfaceLowest,
+    );
 
     final ringRect = Rect.fromCircle(center: center, radius: 68 * scale);
     final ringPaint = Paint()

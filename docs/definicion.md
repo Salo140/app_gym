@@ -4,8 +4,8 @@
 |---|---|
 | Integrantes | Vanessa Ospina, Salome Caicedo |
 | Curso y grupo | Programación Móvil (IF2004), grupo 601 |
-| Fecha | 25 de septiembre de 2026 |
-| Versión | 1.0 |
+| Actualización | 20 de noviembre de 2026 |
+| Versión | 2.0 |
 
 ## Tabla de contenido
 
@@ -23,6 +23,8 @@
 12. [Mockup](#12-mockup)
 13. [Historias, casos de uso, restricciones y supuestos](#13-historias-casos-de-uso-restricciones-y-supuestos)
 14. [Arquitectura técnica y navegación implementada](#14-arquitectura-técnica-y-navegación-implementada)
+15. [Almacenamiento: nube y local](#15-almacenamiento-nube-y-local)
+16. [Aportes por integrante](#16-aportes-por-integrante)
 
 ## 1. Descripción general
 
@@ -86,27 +88,28 @@ Diagnóstico ni tratamiento médico o nutricional; dietas personalizadas; consul
 
 ## 7. Requerimientos funcionales
 
-| ID | Requerimiento | Rol | Prioridad |
-|---|---|---|---|
-| RF-01 | La app debe permitir crear una cuenta e iniciar sesión con correo y contraseña. | Usuario | Alta |
-| RF-02 | La app debe permitir consultar y actualizar nivel, objetivos y preferencias del perfil. | Usuario | Media |
-| RF-03 | La app debe mostrar rutinas y el detalle de la categoría seleccionada. | Usuario | Alta |
-| RF-04 | La app debe permitir crear un plan con nombre de al menos 3 caracteres, un objetivo y una frecuencia de 2 a 5 días por semana. | Usuario | Alta |
-| RF-05 | La app debe permitir registrar series, repeticiones y peso durante una sesión. | Usuario | Alta |
-| RF-06 | La app debe mostrar temporizador de sesión y permitir controlar el descanso entre series. | Usuario | Media |
-| RF-07 | La app debe presentar historial, estadísticas básicas y logros de entrenamiento. | Usuario | Media |
-| RF-08 | La app debe presentar contenidos educativos de alimentación y permitir seleccionar alimentos para armar un plato. | Usuario | Alta |
+| ID | Requerimiento | Rol | Prioridad | Estado y razón |
+|---|---|---|---|---|
+| RF-01 | Crear una cuenta e iniciar sesión con correo y contraseña. | Usuario | Alta | **Modificado:** Firebase Authentication lo realiza cuando se configura el proyecto; sin esa configuración solo se ofrece la cuenta local de demostración, sin almacenar contraseñas. |
+| RF-02 | Consultar y actualizar nivel, objetivos y preferencias del perfil. | Usuario | Media | **Implementado:** nombre, nivel, objetivo, descanso, alertas y unidad se guardan por `uid` en SQLite. |
+| RF-03 | Mostrar rutinas y el detalle de la categoría seleccionada. | Usuario | Alta | **Implementado:** contenido base incluido en la app, disponible sin conexión. |
+| RF-04 | Crear un plan con nombre de al menos 3 caracteres, objetivo y frecuencia de 2 a 5 días por semana. | Usuario | Alta | **Implementado:** formulario validado; guarda en SQLite e intenta sincronizar el plan con Firestore. |
+| RF-05 | Registrar series, repeticiones y peso durante una sesión. | Usuario | Alta | **Modificado:** las series del ejercicio activo se guardan con la sesión localmente y se sincronizan; la sesión actual ofrece un ejercicio a la vez. |
+| RF-06 | Mostrar temporizador de sesión y controlar el descanso entre series. | Usuario | Media | **Implementado:** temporizador de sesión y controles de descanso disponibles en Entrenar. |
+| RF-07 | Presentar historial, estadísticas básicas y logros de entrenamiento. | Usuario | Media | **Implementado:** volumen, sesiones, series, récords, insignias e historial se derivan de sesiones guardadas. |
+| RF-08 | Presentar educación alimentaria y permitir seleccionar alimentos para armar un plato. | Usuario | Alta | **Implementado:** plato educativo con alimentos locales; el catálogo Open Food Facts se consulta aparte y su última respuesta se conserva en caché. |
 
 ## 8. Requerimientos no funcionales
 
-| ID | Categoría | Requerimiento verificable |
-|---|---|---|
-| RNF-01 | Plataforma | La aplicación debe compilar y ejecutarse con Flutter en las plataformas configuradas en el repositorio. |
-| RNF-02 | Usabilidad | El formulario de plan debe impedir continuar mientras falte nombre, objetivo o frecuencia, e indicar el campo por corregir. |
-| RNF-03 | Navegación | Toda pantalla secundaria debe permitir volver a su pantalla anterior con la navegación del sistema o una acción visible. |
-| RNF-04 | Privacidad | La información de perfil y entrenamiento debe pertenecer al usuario autenticado; la autenticación y el almacenamiento persistente quedan pendientes de una fase posterior. |
-| RNF-05 | Educación | NutriGuía debe identificar sus contenidos como educativos y no médicos. |
-| RNF-06 | Mantenibilidad | Cada pantalla y modelo debe permanecer organizado en los directorios de `lib/` correspondientes. |
+| ID | Categoría | Requerimiento verificable | Estado y razón |
+|---|---|---|---|
+| RNF-01 | Plataforma | La aplicación compila y se ejecuta en las plataformas móviles configuradas. | **Modificado:** Android se valida en este entorno Windows; iOS requiere compilación y prueba desde macOS/Xcode antes de declararlo verificado. |
+| RNF-02 | Usabilidad | El formulario de plan impide continuar mientras falte nombre, objetivo o frecuencia e indica el campo. | **Implementado:** validación de formulario y pruebas de widget. |
+| RNF-03 | Navegación | Toda pantalla secundaria permite volver con el sistema o una acción visible. | **Implementado:** `Navigator` de Flutter y acciones visibles. |
+| RNF-04 | Privacidad | Los datos de perfil y entrenamiento pertenecen a la cuenta; no se guardan contraseñas localmente. | **Modificado:** SQLite particiona registros por `uid`; Firestore aplica reglas por dueño; el usuario local de demo es solo para datos de prueba. |
+| RNF-05 | Educación | NutriGuía identifica contenidos como educativos y no médicos. | **Implementado:** aviso educativo y no sustitutivo de profesionales. |
+| RNF-06 | Mantenibilidad | La aplicación separa presentación, modelos, repositorios y fuentes de datos. | **Implementado:** `screens/widgets`, `models`, `data/local`, `data/remote` y `data/repositories`. |
+| RNF-07 | Conectividad | La aplicación conserva datos operativos sin conexión y muestra errores de API/sincronización. | **Implementado:** SQLite, caché de Open Food Facts, cola local de sincronización y mensajes de estado. |
 
 ## 9. Reglas de negocio
 
@@ -123,19 +126,20 @@ Diagnóstico ni tratamiento médico o nutricional; dietas personalizadas; consul
 
 ## 10. Modelo de datos
 
-El MVP prevé conservar Usuario, Perfil, Entrenamiento, Registro, Comida y Logro en almacenamiento local persistente para que sobrevivan al cierre de la app. Rutinas, ejercicios y alimentos iniciales serán contenido local de solo lectura. La persistencia aún no está implementada en este entregable de navegación.
+La implementación conserva datos de usuario en SQLite y sincroniza planes y sesiones con Firestore cuando hay configuración y conexión. Rutinas y opciones de alimentos iniciales se distribuyen como contenido de solo lectura. Los resultados consultados en la API se guardan en la caché local.
 
-| Entidad | Atributos principales | Relaciones | Almacenamiento previsto |
+| Entidad | Atributos principales | Relaciones | Almacenamiento y operación sin conexión |
 |---|---|---|
-| Usuario | id, nombre, correo | Tiene un perfil, entrenamientos y logros. | Local persistente, previsto; pendiente implementar. |
-| Perfil | usuarioId, nivel, objetivos, preferencias | Pertenece a un usuario. | Local persistente, previsto; pendiente implementar. |
-| Rutina | id, nombre, descripción | Agrupa ejercicios. | Datos locales de solo lectura en `lib/data/mock_data.dart`. |
-| Ejercicio | id, nombre, grupoMuscular, equipo, instrucciones | Puede estar en varias rutinas y tener alternativas. | Datos locales de solo lectura en `lib/data/mock_data.dart`. |
-| Entrenamiento | id, usuarioId, rutinaId, fecha, duración, estado | Pertenece al usuario y contiene registros. | Local persistente, previsto; pendiente implementar. |
-| Registro | id, entrenamientoId, ejercicioId, series, repeticiones, peso, descanso | Pertenece a un entrenamiento y un ejercicio. | Local persistente, previsto; pendiente implementar. |
-| Alimento | id, nombre, grupo | Puede incluirse en una comida. | Datos locales de solo lectura en `lib/data/mock_data.dart`. |
-| Comida | id, usuarioId, alimentos | Pertenece a un usuario y combina alimentos. | Local persistente, previsto; pendiente implementar. |
-| Logro | id, usuarioId, nombre, condición, fecha | Se asigna al cumplir una condición. | Local persistente, previsto; pendiente implementar. |
+| Usuario | `uid`, correo | Identifica perfil, planes y sesiones. | Firebase Authentication cuando está configurado. La demo usa `local-demo`; no guarda contraseñas. |
+| Perfil | `uid`, nombre, nivel, objetivo, unidad y alertas | Pertenece a un usuario. | SQLite, particionado por `uid`; disponible sin conexión. |
+| Rutina | id, nombre, descripción | Agrupa ejercicios. | Contenido local de solo lectura en `lib/data/mock_data.dart`. |
+| Ejercicio | id, nombre, grupo muscular, equipo, instrucciones | Pertenece a contenido de rutina. | Contenido local de solo lectura. |
+| Plan | id, `owner_id`, nombre, objetivo, días, fecha | Pertenece a un usuario. | SQLite primero; sincronización a `users/{uid}/plans` en Firestore cuando está disponible. Queda en SQLite si falla la nube. |
+| Sesión | id, `owner_id`, título, duración, fecha, volumen y series | Contiene registros de series. | SQLite primero; sincronización a `users/{uid}/sessions` en Firestore. Se reintenta al abrir la siguiente sesión. |
+| Registro de serie | ejercicio, número, repeticiones, peso | Pertenece a una sesión. | JSON local asociado a la sesión; viaja con ella a Firestore. |
+| Alimento | nombre, marca y valores por 100 g | Resultado del catálogo. | Open Food Facts; la respuesta de cada consulta se conserva en `api_cache` SQLite. El catálogo base sigue disponible sin red. |
+| Plato | selección por grupo de alimentos | Combina alimentos educativos. | Selección local por `uid`; los alimentos base vienen con la app. |
+| Logro | condición por número de sesiones | Derivado de sesiones del usuario. | Calculado a partir del historial local, disponible sin conexión. |
 
 ```mermaid
 erDiagram
@@ -153,7 +157,7 @@ erDiagram
 
 | ID | Pantalla | Archivo | Propósito y requerimientos |
 |---|---|---|---|
-| P-01 | Acceso / crear cuenta | `lib/screens/login_screen.dart` | Formulario de acceso y registro demostrativo; RF-01. |
+| P-01 | Acceso / crear cuenta | `lib/screens/login_screen.dart` | Firebase Authentication o acceso local de demostración; RF-01. |
 | P-02 | Inicio | `lib/screens/inicio_screen.dart` | Resumen y accesos principales; F-01, F-06. |
 | P-03 | Entrenar | `lib/screens/entrenar_screen.dart` | Rutinas, sesión activa, series y descanso; RF-03, RF-05, RF-06. |
 | P-04 | Detalle de categoría | `lib/screens/category_detail_screen.dart` | Muestra la categoría seleccionada; recibe `RoutineCategory`; RF-03. |
@@ -219,62 +223,120 @@ Las imágenes de `docs/mockup/` corresponden a capturas del prototipo Flutter ac
 
 - La app se desarrolla en Flutter para el proyecto académico y el tiempo disponible es de 3 a 4 meses.
 - El contenido inicial de rutinas, ejercicios y alimentos es de demostración.
-- El login actual no verifica credenciales; se incorporará autenticación al implementar el almacenamiento.
-- La persistencia local y la gestión segura de credenciales quedan fuera del prototipo de navegación actual.
-- El usuario dispone de un dispositivo compatible; algunas imágenes de demostración requieren conexión.
+- El modo local de demostración solo acepta las credenciales de prueba del README y no autentica ni sincroniza con la nube.
+- Para cuentas reales, el equipo configura Firebase Authentication, Firestore y las reglas de `firestore.rules`; no se suben archivos locales de configuración ni credenciales privadas.
+- La búsqueda nueva en Open Food Facts y el primer inicio de sesión/registro requieren conexión; las búsquedas ya almacenadas, planes, sesiones y preferencias pueden consultarse sin ella.
+- La foto de perfil se puede seleccionar desde la galería, queda en almacenamiento local y se sube a Firebase Storage cuando el equipo configura el bucket. `storage.rules` restringe lectura y escritura al `uid` autenticado y limita imágenes a 5 MB.
+- Perfil incluye una notificación local de prueba en Android/iOS, con solicitud del permiso del sistema. No se implementa mensajería push remota.
+- La app usa recomendaciones por reglas y contenido educativo; no afirma integrar un servicio de inteligencia artificial generativa.
 
 ## 14. Arquitectura técnica y navegación implementada
 
 ### 14.1 Entorno y organización
 
-Entorno verificado: Flutter 3.47.0 stable y Dart 3.13.0; el constraint del proyecto es `sdk: ^3.13.0`. Versiones resueltas en `pubspec.lock`:
+Entorno verificado en desarrollo: Flutter 3.47.7 stable y Dart 3.13.5; el constraint del proyecto es `sdk: ^3.13.0`. Versiones resueltas en `pubspec.lock`:
 
 | Paquete | Versión | Uso |
 |---|---|---|
-| `material_symbols_icons` | 4.2960.0 | Iconos Material Symbols usados por las pantallas y controles. |
-| `google_fonts` | 8.2.1 | Tipografía Sora, Plus Jakarta Sans y Space Grotesk definida en `lib/theme/app_text.dart`. |
-| `cupertino_icons` | 1.0.9 | Dependencia de la plantilla Flutter; no se usa directamente en las pantallas actuales. |
+| `firebase_core` | 5.2.0 | Inicialización Firebase con opciones privadas del entorno local. |
+| `firebase_auth` | 7.1.0 | Registro e inicio de sesión por correo y contraseña. |
+| `cloud_firestore` | 7.2.0 | Sincronización de planes y sesiones bajo el `uid`. |
+| `firebase_storage` | 14.1.0 | Subida y lectura de la foto de perfil del usuario. |
+| `image_picker` | 1.2.4 | Selección de una foto desde la galería. |
+| `flutter_local_notifications` | 22.3.3 | Notificación de prueba en Android/iOS. |
+| `path_provider` | 2.1.6 | Conservación local de la foto en el directorio de soporte de la app. |
+| `sqflite` | 2.4.6 | Base de datos SQLite para datos locales y modo sin conexión. |
+| `http` | 1.6.0 | Cliente de Open Food Facts con timeout. |
+| `google_fonts` | 8.2.1 | Tipografías del tema existente. |
+| `material_symbols_icons` | 4.2960.0 | Iconos Material Symbols. |
+| `sqflite_common_ffi` | 2.4.7 (desarrollo) | SQLite en memoria para pruebas de repositorios. |
 
-Flutter provee Material y `Navigator`, por lo que el proyecto no usa un paquete de navegación adicional. La implementación mantiene widgets y modelos sencillos en las carpetas existentes, sin afirmar una arquitectura por capas todavía no creada.
+Flutter provee Material y `Navigator`, por lo que no se requiere un paquete de navegación adicional. La app aplica separación por responsabilidades y Repository Pattern; las pantallas mantienen su estado local con `StatefulWidget` y llaman a repositorios tipados.
 
 | Carpeta | Responsabilidad actual |
 |---|---|
-| `lib/screens/` | Vistas principales y pantallas secundarias. |
-| `lib/widgets/` | Componentes reutilizables y navegación inferior. |
-| `lib/models/` | Modelos de rutina, ejercicio y entidades de vista. |
-| `lib/data/` | Datos de demostración. |
+| `lib/screens/`, `lib/widgets/` | Presentación, formularios, navegación y estado de cada vista. |
+| `lib/models/` | Entidades y modelos serializables de planes y sesiones. |
+| `lib/data/local/` | Esquema SQLite y fuente local intercambiable del repositorio. |
+| `lib/data/remote/` | Firebase Authentication, configuración, Firestore y Storage. |
+| `lib/data/repositories/` | Repositorios de autenticación, entrenamientos, fotos, notificaciones y catálogo API. |
+| `lib/data/mock_data.dart` | Rutinas, ejercicios y opciones educativas iniciales. |
 | `lib/theme/` | Colores y estilos tipográficos. |
+
+No hay una capa separada de casos de uso/domain ni un `ViewModel` por pantalla; se mantiene una arquitectura de tres responsabilidades adecuada al tamaño actual, sin afirmar una Clean Architecture completa.
 
 ### 14.2 Rutas implementadas
 
 | Pantalla | Archivo | Se llega desde | Dato recibido |
 |---|---|---|---|
-| P-01 Acceso | `lib/screens/login_screen.dart` | Inicio de la aplicación | Ninguno; credenciales demostrativas. |
-| P-02 Inicio | `lib/screens/inicio_screen.dart` | P-01, al enviar el formulario válido | Ninguno. |
+| P-01 Acceso | `lib/screens/login_screen.dart` | Inicio de la aplicación o cierre de sesión | Credenciales Firebase o cuenta local de demo. |
+| P-02 Inicio | `lib/screens/inicio_screen.dart` | P-01, al autenticar | Preferencias de hidratación de la cuenta. |
 | P-03 Entrenar | `lib/screens/entrenar_screen.dart` | Barra inferior de AppShell | `onTabSelected`. |
 | P-04 Detalle de categoría | `lib/screens/category_detail_screen.dart` | P-03, mediante `Navigator.push` | `RoutineCategory` de la categoría tocada. |
 | P-05 Crear plan | `lib/screens/plan_form_screen.dart` | P-03, mediante `Navigator.push` | Ninguno. |
 | P-06 Resumen del plan | `lib/screens/plan_summary_screen.dart` | P-05, mediante `Navigator.push` | `WorkoutPlan` construido y validado. |
-| P-07 NutriGuía | `lib/screens/nutriguia_screen.dart` | Barra inferior de AppShell | Ninguno. |
-| P-08 Progreso | `lib/screens/progreso_screen.dart` | Barra inferior de AppShell | Ninguno. |
-| P-09 Perfil | `lib/screens/perfil_screen.dart` | Barra inferior de AppShell | Racha desde AppShell. |
+| P-07 NutriGuía | `lib/screens/nutriguia_screen.dart` | Barra inferior de AppShell | Repositorio API, caché y preferencias de plato. |
+| P-08 Progreso | `lib/screens/progreso_screen.dart` | Barra inferior de AppShell | Sesiones locales del usuario. |
+| P-09 Perfil | `lib/screens/perfil_screen.dart` | Barra inferior de AppShell | Identidad, preferencias y acción de cierre de sesión. |
 
-Cada vista principal tiene su propio `Scaffold`; `AppShell` conserva el encabezado y la navegación inferior compartidos. Las pestañas usan selección de tab y los flujos secundarios usan `Navigator.push/pop`. La app utiliza datos de demostración en memoria. El guardado persistente se implementará posteriormente para cumplir la conservación entre aperturas descrita en RNF-04 y el modelo de datos.
+Cada vista principal tiene su propio `Scaffold`; `AppShell` conserva encabezado y navegación inferior. SQLite es la fuente local de planes y sesiones; Firestore es opcional e intercambiable mediante `WorkoutCloudDataSource`. Al entrar con Firebase se reintentan escrituras pendientes y se descargan documentos del `uid` autenticado. `NutritionRepository` consulta Open Food Facts, valida la respuesta JSON y usa `api_cache` cuando la red falla. `firestore.rules` exige autenticación y coincidencia de `request.auth.uid` con el dueño de la ruta y del documento.
+
+La app muestra un estado de demostración si no se pasan opciones Firebase por `--dart-define-from-file`. La configuración de un proyecto real y la prueba en un dispositivo/emulador deben completarse antes de la sustentación.
+
+## 15. Almacenamiento: nube y local
+
+| Dato | Nube | Local | Qué ocurre sin conexión |
+|---|---|---|---|
+| Cuenta y credenciales | Firebase Authentication (con proyecto configurado). | Firebase SDK conserva la sesión; GymMate no persiste la contraseña. | Una sesión autenticada ya iniciada puede abrirse con la sesión almacenada; crear cuenta o iniciar sesión por primera vez requiere conexión. |
+| Perfil, objetivos, preferencias e hidratación | No se sincronizan. | SQLite `preferences`, particionado por `owner_id`. | Se consultan y actualizan localmente. |
+| Foto de perfil | Firebase Storage `users/{uid}/profile/avatar.jpg`, con reglas de propietario y validación de tipo/tamaño. | Copia en el directorio privado de la app; la ruta se guarda en `preferences`. | La foto local permanece disponible; una nueva carga remota requiere conexión. |
+| Notificación de prueba | No aplica. | Notificación local del sistema operativo; no se guarda contenido personal. | El usuario puede enviar la prueba sin conexión si concede permiso al sistema. |
+| Planes personalizados | Firestore `users/{uid}/plans`, con reglas de propietario. | SQLite `workout_plans`, marcado como sincronizado o pendiente. | Se pueden crear y consultar; se reintentan al volver a abrir la app con la cuenta autenticada. |
+| Sesiones y series | Firestore `users/{uid}/sessions`, con reglas de propietario. | SQLite `workout_sessions`; incluye los detalles JSON de series. | Se pueden guardar y revisar sin red; el intento fallido queda pendiente. |
+| Catálogo Open Food Facts | API pública; no se envían datos de cuenta a la API. | SQLite `api_cache`, indexada por término de búsqueda. | Se muestran las últimas respuestas guardadas para el mismo término; una búsqueda nunca guardada presenta un error claro. |
+| Rutinas y alimentos educativos iniciales | No aplica. | Datos incluidos en `lib/data/mock_data.dart`. | Siempre disponibles. |
+| Selección del plato y logros | No se sincronizan. | Plato en preferencias SQLite; logros calculados desde sesiones locales. | Se mantienen disponibles en el dispositivo. |
+
+Las reglas de Firestore y Storage están en `firestore.rules` y `storage.rules`. No se despliegan desde este repositorio; el equipo debe publicarlas en Firebase Console antes de probar sincronización o subida de fotos.
+
+De acuerdo con el documento pedagógico entregado por el equipo, IA corresponde a la semana 17 y no hace parte del alcance solicitado para la entrega de semana 16. La compilación de distribución necesita una llave privada propia del equipo, excluida del repositorio; el procedimiento está en el README.
+
+## 16. Aportes por integrante
+
+La tabla siguiente se basa solo en autores y commits visibles en el historial del repositorio. Los enlaces permiten contrastar cada aporte con GitHub; la entrega final debe añadir los PR/commits funcionales que el equipo realice para esta versión.
+
+| Integrante | Aportes respaldados por Git | Evidencia |
+|---|---|---|
+| Vanessa Ospina | Integración de planes personalizados, pruebas de widgets, navegación y mockups. | [de02ba1](https://github.com/Salo140/Proyecto_PM/commit/de02ba1), [d684947](https://github.com/Salo140/Proyecto_PM/commit/d684947), [fbc17f1](https://github.com/Salo140/Proyecto_PM/commit/fbc17f1), [2e4959d](https://github.com/Salo140/Proyecto_PM/commit/2e4959d). |
+| Salome Caicedo | Implementación inicial, pantallas principales y presentación del proyecto. | [ca6f8b9](https://github.com/Salo140/Proyecto_PM/commit/ca6f8b9), [84577f4](https://github.com/Salo140/Proyecto_PM/commit/84577f4), [9893379](https://github.com/Salo140/Proyecto_PM/commit/9893379), [d0aa2cb](https://github.com/Salo140/Proyecto_PM/commit/d0aa2cb). |
+
+Estos commits acreditan aportes anteriores del proyecto, no la implementación descrita en esta versión. Los commits asistidos por IA requieren revisión y explicación del equipo; no se atribuyen aquí como trabajo individual de Vanessa o Salome. Antes de entregar, registren en esta tabla los PR y commits nuevos de cada integrante y aseguren que cada persona haya realizado una contribución funcional propia y revisable.
 
 ## Historial de cambios
 
 | Fecha | Cambio | Responsable |
 |---|---|---|
 | 25-09-2026 | Definición formal del entregable 1 y correspondencia inicial con el prototipo. | Equipo GymMate |
+| 20-11-2026 | Implementación de SQLite, autenticación/sincronización opcional con Firebase, catálogo API, foto local/Storage, notificación de prueba, métricas reales, pruebas y guía de firma Android. | GitHub Copilot como apoyo; revisión del equipo pendiente. |
 
 ## Referencias
 
 | Fuente | Uso en el documento |
 |---|---|
 | [Actividad: definición del proyecto y navegación](https://oscarleosanchez.github.io/sitio-iue-2026-02/movil/proyecto-entregable-1/actividad/) | Estructura, condiciones mínimas y alcance del entregable 1. |
+| [Actividad: proyecto funcionando](https://oscarleosanchez.github.io/sitio-iue-2026-02/movil/proyecto-entregable-final/actividad/) | Requisitos finales de nube/local, API, seguridad, README, aportes y sustentación. |
+| [Material del curso: semana 07](https://oscarleosanchez.github.io/sitio-iue-2026-02/movil/semana-07/) | Consumo de datos externos, estados de carga y errores. |
+| [Material del curso: semana 12](https://oscarleosanchez.github.io/sitio-iue-2026-02/movil/semana-12/) | MVVM y Repository Pattern. |
+| [Material del curso: semana 13](https://oscarleosanchez.github.io/sitio-iue-2026-02/movil/semana-13/) | Separación de fuentes de datos y pruebas con SQLite/local. |
+| [Firebase: Authentication](https://firebase.google.com/docs/auth/flutter/start) | Inicio y registro de cuentas. |
+| [Firebase: Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started) | Restricción de acceso a los datos por `uid`. |
+| [Firebase: Storage](https://firebase.google.com/docs/storage/flutter/start) | Subida y consulta de la foto de perfil. |
+| [Flutter Local Notifications](https://pub.dev/packages/flutter_local_notifications) | Notificación local de prueba y solicitud de permisos. |
+| [Open Food Facts API](https://openfoodfacts.github.io/openfoodfacts-server/api/) | Búsqueda externa de alimentos y nutrimentos. |
 | [Flutter: Navigation and routing](https://docs.flutter.dev/ui/navigation) | Navegación entre pantallas con Navigator. |
 | [Flutter: Form validation](https://docs.flutter.dev/cookbook/forms/validation) | Validación del formulario del plan. |
+| Acuerdo pedagógico IF2004, grupo 601 (documento adjunto por el equipo) | Alcance de las entregas semanales; para esta versión se prioriza el proyecto final de semana 16 y se reserva IA para semana 17. |
 
 ## Declaración de uso de inteligencia artificial
 
-Se utilizó GitHub Copilot para contrastar este repositorio con la consigna enlazada, proponer la estructura de este documento y añadir un formulario demostrativo de acceso consistente con la interfaz existente. El equipo debe revisar y confirmar los requisitos, objetivos, reglas, alcance y mockups antes de entregar; la herramienta no verificó los datos de las personas usuarias ni sustituyó decisiones del equipo. La autenticación real y la persistencia no se declaran implementadas.
+Se utilizó GitHub Copilot como apoyo para contrastar el repositorio con la actividad final, implementar componentes de persistencia local, autenticación/sincronización Firebase configurable, consulta API, pruebas y documentación. Las personas integrantes deben revisar y comprender cada cambio y registrar sus propios aportes funcionales en Git; la herramienta no sustituye la sustentación ni la verificación en el Firebase del equipo. Sin configurar Firebase, el proyecto opera explícitamente en modo local de demostración, no en modo de nube.

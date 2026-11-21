@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/repositories/workout_repository.dart';
 import '../models/workout_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
@@ -7,9 +8,24 @@ import '../widgets/common.dart';
 import '../widgets/plan_components.dart';
 
 class PlanSummaryScreen extends StatelessWidget {
-  const PlanSummaryScreen({super.key, required this.plan});
+  const PlanSummaryScreen({super.key, required this.plan, this.saveResult});
 
   final WorkoutPlan plan;
+  final SaveWorkoutResult? saveResult;
+
+  String? get _saveMessage {
+    final result = saveResult;
+    if (result == null) return null;
+    return switch (result.syncStatus) {
+      CloudSyncStatus.synced =>
+        'Plan guardado en el dispositivo y sincronizado con tu cuenta.',
+      CloudSyncStatus.notConfigured =>
+        'Plan guardado en el dispositivo. Firebase aún no está configurado.',
+      CloudSyncStatus.pending =>
+        'Plan guardado en el dispositivo; sincronización pendiente'
+            '${result.syncError == null ? '.' : ': ${result.syncError}'}',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +51,15 @@ class PlanSummaryScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
+            if (_saveMessage case final message?) ...[
+              SurfaceCard(
+                child: Text(
+                  message,
+                  style: AppText.bodySm(color: AppColors.onSurface),
+                ),
+              ),
+              const SizedBox(height: 18),
+            ],
             SurfaceCard(
               child: Text(
                 'Comenzaras con sesiones progresivas y descansos planificados. '

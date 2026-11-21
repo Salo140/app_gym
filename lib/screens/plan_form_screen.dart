@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
 
+import '../data/repositories/workout_repository.dart';
 import '../models/workout_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
+import 'plan_summary_screen.dart';
 
 class PlanFormScreen extends StatefulWidget {
-  const PlanFormScreen({super.key});
+  const PlanFormScreen({super.key, this.ownerId, this.workoutRepository});
+
+  final String? ownerId;
+  final WorkoutRepository? workoutRepository;
 
   @override
   State<PlanFormScreen> createState() => _PlanFormScreenState();
@@ -24,23 +30,42 @@ class _PlanFormScreenState extends State<PlanFormScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
-    _openSummary();
-  }
+  bool _isSaving = false;
 
-  Future<void> _openSummary() async {
-    final result = await Navigator.of(context).pushNamed(
-      '/plan-summary',
-      arguments: PlanSummaryArguments(
-        plan: WorkoutPlan(
-          name: _nameController.text.trim(),
-          goal: _goal!,
-          days: _days!,
-        ),
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    final plan = WorkoutPlan(
+      name: _nameController.text.trim(),
+      goal: _goal!,
+      days: _days!,
+    );
+    SaveWorkoutResult? saveResult;
+    try {
+      final repository = widget.workoutRepository;
+      final ownerId = widget.ownerId;
+      if (repository != null && ownerId != null) {
+        saveResult = await repository.savePlan(ownerId: ownerId, plan: plan);
+      }
+    } on DatabaseException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo guardar el plan en este dispositivo.'),
+          ),
+        );
+      }
+      return;
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PlanSummaryScreen(plan: plan, saveResult: saveResult),
       ),
     );
-    if (mounted && result == true) Navigator.of(context).pop(true);
   }
 
   @override
@@ -107,7 +132,9 @@ class _PlanFormScreenState extends State<PlanFormScreen> {
               PrimaryButton(
                 label: 'Ver resumen',
                 icon: Icons.arrow_forward,
-                onPressed: _submit,
+                onPressed: () {
+                  if (!_isSaving) _submit();
+                },
               ),
             ],
           ),

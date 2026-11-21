@@ -48,6 +48,16 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Local Firebase client configuration
+.env
+.env.*
+!.env.example
+firebase.local.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+android/key.properties
+android/*.jks
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
