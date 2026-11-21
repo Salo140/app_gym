@@ -12,6 +12,12 @@ class RoutineCategory {
   final IconData icon;
 }
 
+class CategoryDetailArguments {
+  const CategoryDetailArguments({required this.category});
+
+  final RoutineCategory category;
+}
+
 class WorkoutPlan {
   const WorkoutPlan({
     required this.name,
@@ -22,4 +28,10 @@ class WorkoutPlan {
   final String name;
   final String goal;
   final int days;
+}
+
+class PlanSummaryArguments {
+  const PlanSummaryArguments({required this.plan});
+
+  final WorkoutPlan plan;
 }
