@@ -184,7 +184,9 @@ class _AppShellState extends State<AppShell> {
   Future<void> _syncPending() async {
     try {
       final ownerId = widget.authRepository.userId;
-      final errors = await widget.workoutRepository.syncPending(ownerId);
+      final errors = <String>[
+        ...await widget.workoutRepository.syncPending(ownerId),
+      ];
       errors.addAll(await widget.workoutRepository.refreshFromCloud(ownerId));
       if (errors.isNotEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
