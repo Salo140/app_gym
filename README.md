@@ -16,7 +16,8 @@ Programación Móvil (IF2004), grupo 601.
 
 - Flutter **3.47.7 stable**
 - Dart **3.13.5**
-- Android o iOS para la app móvil (emulador o dispositivo real).
+- Chrome, Android o iOS para ejecutar la app (navegador, emulador o dispositivo
+  real).
 
 La restricción de Dart del proyecto es `^3.13.0`. El proyecto se valida con las
 versiones exactas indicadas arriba.
@@ -44,6 +45,16 @@ flutter run --dart-define-from-file=firebase.local.json
 La app también puede instalarse en un dispositivo conectado con
 `flutter run -d <device-id>`. Usa `flutter devices` para consultar los destinos
 disponibles.
+
+Para ejecutarla en Chrome:
+
+```sh
+flutter run -d chrome
+```
+
+La app usa SQLite en el navegador mediante WebAssembly; los archivos requeridos
+(`web/sqlite3.wasm` y `web/sqflite_sw.js`) ya están incluidos en el proyecto.
+Los datos web se guardan en IndexedDB del navegador.
 
 ## Configuración de Firebase
 
