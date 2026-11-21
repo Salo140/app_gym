@@ -53,7 +53,6 @@ Exercise buildInitialExercise() => Exercise(
           prevReps: 12,
           weight: 50,
           reps: 12,
-          completed: true,
         ),
         ExerciseSet(
           id: 2,
@@ -62,7 +61,6 @@ Exercise buildInitialExercise() => Exercise(
           prevReps: 10,
           weight: 75,
           reps: 10,
-          completed: true,
         ),
         ExerciseSet(
           id: 3,

@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../data/repositories/auth_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, required this.onLogin});
+  const LoginScreen({
+    super.key,
+    required this.onLogin,
+    this.authRepository,
+    this.onAuthenticated,
+  });
 
   final ValueChanged<BuildContext> onLogin;
+  final AuthRepository? authRepository;
+  final ValueChanged<BuildContext>? onAuthenticated;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -20,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isRegistering = false;
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -28,8 +39,64 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) widget.onLogin(context);
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate() || _isSubmitting) return;
+    final authRepository = widget.authRepository;
+    if (authRepository == null) {
+      widget.onLogin(context);
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorMessage = null;
+    });
+    try {
+      if (_isRegistering) {
+        await authRepository.createAccount(
+          _emailController.text,
+          _passwordController.text,
+        );
+      } else {
+        await authRepository.signIn(
+          _emailController.text,
+          _passwordController.text,
+        );
+      }
+      if (mounted) widget.onAuthenticated?.call(context);
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      setState(() => _errorMessage = _firebaseErrorMessage(error));
+    } on DemoAuthenticationException {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage =
+            'El correo o la contraseña de demo no son correctos.',
+      );
+    } on DemoRegistrationUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'El registro requiere configurar Firebase. Usa la cuenta de demostración.';
+      });
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  String _firebaseErrorMessage(FirebaseAuthException error) {
+    return switch (error.code) {
+      'invalid-credential' ||
+      'user-not-found' ||
+      'wrong-password' => 'El correo o la contraseña no son correctos.',
+      'email-already-in-use' => 'Ya existe una cuenta con ese correo.',
+      'invalid-email' => 'El correo no tiene un formato válido.',
+      'weak-password' => 'Elige una contraseña más segura.',
+      'network-request-failed' =>
+        'No hay conexión. Vuelve a intentarlo cuando tengas internet.',
+      'too-many-requests' =>
+        'Se limitaron temporalmente los intentos. Espera un momento.',
+      _ => 'No se pudo completar el acceso (${error.code}).',
+    };
   }
 
   @override
@@ -72,6 +139,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         : 'Tu entrenamiento, a tu ritmo.',
                     style: AppText.bodyMd(),
                   ),
+                  if (widget.authRepository?.isDemo == true) ...[
+                    const SizedBox(height: 14),
+                    SurfaceCard(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        'Modo local de demostración. '
+                        'Correo: ${DemoAuthRepository.demoEmail} · '
+                        'Contraseña: ${DemoAuthRepository.demoPassword}. '
+                        'El acceso a Firebase se activa al configurar el proyecto.',
+                        style: AppText.bodySm(size: 11),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 30),
                   TextFormField(
                     controller: _emailController,
@@ -117,15 +197,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         : null,
                   ),
                   const SizedBox(height: 24),
+                  if (_errorMessage case final message?) ...[
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: AppText.bodySm(color: AppColors.error),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   PrimaryButton(
                     label: _isRegistering ? 'Crear cuenta' : 'Iniciar sesión',
-                    onPressed: _submit,
+                    onPressed: () {
+                      if (!_isSubmitting) _submit();
+                    },
                   ),
                   const SizedBox(height: 18),
                   TextButton(
-                    onPressed: () => setState(
-                      () => _isRegistering = !_isRegistering,
-                    ),
+                    onPressed: () =>
+                        setState(() => _isRegistering = !_isRegistering),
                     child: Text(
                       _isRegistering
                           ? 'Ya tengo una cuenta · Iniciar sesión'

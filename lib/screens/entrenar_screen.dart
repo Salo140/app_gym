@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../data/mock_data.dart';
+import '../data/repositories/workout_repository.dart';
 import '../models/models.dart';
+import '../models/saved_workout.dart';
 import '../models/workout_plan.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
@@ -15,39 +18,60 @@ import 'plan_form_screen.dart';
 
 /// Equivale a `EntrenarView.tsx`.
 class EntrenarView extends StatefulWidget {
-  const EntrenarView({super.key, required this.onTabSelected});
+  const EntrenarView({
+    super.key,
+    required this.onTabSelected,
+    this.ownerId,
+    this.workoutRepository,
+  });
 
   final ValueChanged<TabType> onTabSelected;
+  final String? ownerId;
+  final WorkoutRepository? workoutRepository;
 
   @override
   State<EntrenarView> createState() => _EntrenarViewState();
 }
 
 class _EntrenarViewState extends State<EntrenarView> {
-  late Exercise _exercise = buildInitialExercise();
+  late final Exercise _exercise = buildInitialExercise();
 
   // Cronómetro de sesión
-  int _sessionSeconds = 24 * 60 + 22;
+  int _sessionSeconds = 0;
   bool _isSessionRunning = true;
   Timer? _sessionTimer;
 
   // Serie activa
-  int _activeSetId = 3;
-  double _activeWeight = 80;
-  int _activeReps = 8;
+  int _activeSetId = 1;
+  double _activeWeight = 50;
+  int _activeReps = 12;
 
   // Descanso
-  bool _showRestWidget = true;
-  int _restSeconds = 71;
+  bool _showRestWidget = false;
+  int _restSeconds = 90;
   int _totalRestSeconds = 90;
   bool _isRestPaused = false;
   Timer? _restTimer;
 
   bool _workoutFinished = false;
+  String? _completionMessage;
+  Future<List<SavedWorkoutPlan>>? _savedPlans;
+
+  int get _completedSetCount =>
+      _exercise.sets.where((set) => set.completed).length;
+
+  double get _completedVolumeKg => _exercise.sets
+      .where((set) => set.completed)
+      .fold(0, (total, set) => total + set.weight * set.reps);
 
   @override
   void initState() {
     super.initState();
+    final repository = widget.workoutRepository;
+    final ownerId = widget.ownerId;
+    if (repository != null && ownerId != null) {
+      _savedPlans = repository.getPlans(ownerId);
+    }
     _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       if (_isSessionRunning && !_workoutFinished) {
@@ -299,16 +323,90 @@ class _EntrenarViewState extends State<EntrenarView> {
               ),
             ),
           ),
+          if (_savedPlans != null) _savedPlansList(),
           FeatureCard(
             title: 'Crear mi plan',
             subtitle: 'Personaliza objetivo y frecuencia',
             icon: Symbols.add_task,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PlanFormScreen()),
-            ),
+            onTap: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => PlanFormScreen(
+                    ownerId: widget.ownerId,
+                    workoutRepository: widget.workoutRepository,
+                  ),
+                ),
+              );
+              final repository = widget.workoutRepository;
+              final ownerId = widget.ownerId;
+              if (mounted && repository != null && ownerId != null) {
+                setState(() => _savedPlans = repository.getPlans(ownerId));
+              }
+            },
           ),
         ],
       ),
+    );
+  }
+
+  Widget _savedPlansList() {
+    return FutureBuilder<List<SavedWorkoutPlan>>(
+      future: _savedPlans,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          if (snapshot.error is DatabaseException) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                'No se pudieron cargar tus planes guardados.',
+                style: AppText.bodySm(color: AppColors.error, size: 12),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }
+        if (snapshot.connectionState != ConnectionState.done ||
+            snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Mis planes guardados',
+                style: AppText.labelSm(
+                  color: AppColors.primaryLight,
+                  size: 11,
+                  letterSpacing: 0,
+                ),
+              ),
+              ...snapshot.data!.map(
+                (savedPlan) => ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Symbols.assignment,
+                    color: AppColors.primaryLight,
+                  ),
+                  title: Text(
+                    savedPlan.plan.name,
+                    style: AppText.bodyMd(
+                      color: AppColors.onSurface,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${savedPlan.plan.goal} · ${savedPlan.plan.days} días/semana',
+                    style: AppText.bodySm(size: 11),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1377,8 +1475,9 @@ class _EntrenarViewState extends State<EntrenarView> {
                         weight: FontWeight.w700,
                       ),
                     ),
-                    const TextSpan(
-                      text: ' de sesión con 16 series y un nuevo récord en press.',
+                    TextSpan(
+                      text:
+                          ' de sesión con $_completedSetCount series registradas.',
                     ),
                   ],
                 ),
@@ -1402,7 +1501,7 @@ class _EntrenarViewState extends State<EntrenarView> {
                       foreground: AppColors.onPrimary,
                       onTap: () {
                         Navigator.of(ctx).pop();
-                        setState(() => _workoutFinished = true);
+                        _saveAndFinishWorkout();
                       },
                     ),
                   ),
@@ -1413,6 +1512,56 @@ class _EntrenarViewState extends State<EntrenarView> {
         ),
       ),
     );
+  }
+
+  Future<void> _saveAndFinishWorkout() async {
+    final repository = widget.workoutRepository;
+    final ownerId = widget.ownerId;
+    if (repository != null && ownerId != null) {
+      final session = SavedWorkoutSession(
+        id: '${ownerId}_${DateTime.now().microsecondsSinceEpoch}',
+        ownerId: ownerId,
+        title: _exercise.name,
+        durationSeconds: _sessionSeconds,
+        totalSets: _completedSetCount,
+        volumeKg: _completedVolumeKg,
+        completedAt: DateTime.now().toUtc(),
+        sets: _exercise.sets
+            .where((set) => set.completed)
+            .map(
+              (set) => SavedWorkoutSet(
+                exerciseName: _exercise.name,
+                setNumber: set.id,
+                weightKg: set.weight,
+                reps: set.reps,
+              ),
+            )
+            .toList(growable: false),
+      );
+      try {
+        final result = await repository.saveSession(session);
+        if (!mounted) return;
+        _completionMessage = switch (result.syncStatus) {
+          CloudSyncStatus.synced => 'Sesión sincronizada con tu cuenta.',
+          CloudSyncStatus.notConfigured =>
+            'Sesión guardada en el dispositivo; Firebase no está configurado.',
+          CloudSyncStatus.pending =>
+            'Sesión guardada en el dispositivo; sincronización pendiente'
+                '${result.syncError == null ? '.' : ': ${result.syncError}'}',
+        };
+      } on DatabaseException {
+        if (!mounted) return;
+        showGymToast(
+          context,
+          'No se pudo guardar la sesión en este dispositivo.',
+        );
+        return;
+      }
+    } else {
+      _completionMessage =
+          'Sesión de demostración; inicia sesión para guardar tus datos.';
+    }
+    if (mounted) setState(() => _workoutFinished = true);
   }
 
   Widget _dialogButton({
@@ -1491,7 +1640,7 @@ class _EntrenarViewState extends State<EntrenarView> {
               ),
               const SizedBox(height: 12),
               Text(
-                '¡Gran trabajo, Carlos!',
+                '¡Entrenamiento registrado!',
                 textAlign: TextAlign.center,
                 style: AppText.headlineLg(),
               ),
@@ -1499,12 +1648,23 @@ class _EntrenarViewState extends State<EntrenarView> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 320),
                 child: Text(
-                  'Consistencia intachable. Tu volumen hoy aportó 3,850 kg a tu '
-                  'progreso semanal y desbloqueó la insignia de Racha.',
+                  'Registraste $_completedSetCount series y '
+                  '${_completedVolumeKg.round()} kg de volumen.',
                   textAlign: TextAlign.center,
                   style: AppText.bodyMd(height: 1.6),
                 ),
               ),
+              if (_completionMessage case final message?) ...[
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 320),
+                  child: Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: AppText.bodySm(color: AppColors.secondaryLight),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 320),
@@ -1521,7 +1681,7 @@ class _EntrenarViewState extends State<EntrenarView> {
                     Expanded(
                       child: _summaryTile(
                         'SERIES',
-                        '16',
+                        '$_completedSetCount',
                         color: AppColors.primary,
                       ),
                     ),
@@ -1529,7 +1689,7 @@ class _EntrenarViewState extends State<EntrenarView> {
                     Expanded(
                       child: _summaryTile(
                         'CARGA',
-                        '3.8k kg',
+                        '${_completedVolumeKg.round()} kg',
                         color: AppColors.secondaryLight,
                       ),
                     ),

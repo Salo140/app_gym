@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../models/saved_workout.dart';
+import '../data/repositories/workout_repository.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/common.dart';
@@ -31,7 +34,10 @@ class _DayBar {
 
 /// Equivale a `ProgresoView.tsx`.
 class ProgresoView extends StatefulWidget {
-  const ProgresoView({super.key});
+  const ProgresoView({super.key, this.ownerId, this.workoutRepository});
+
+  final String? ownerId;
+  final WorkoutRepository? workoutRepository;
 
   @override
   State<ProgresoView> createState() => _ProgresoViewState();
@@ -39,85 +45,33 @@ class ProgresoView extends StatefulWidget {
 
 class _ProgresoViewState extends State<ProgresoView> {
   _Period _period = _Period.semanal;
-  String _feedback = 'Toca un día para ver distribución y foco muscular';
-  final Map<String, bool> _openSessions = {'hist-1': true};
+  String _feedback = 'Finaliza una sesión para consultar tu evolución.';
+  final Map<String, bool> _openSessions = {};
+  Future<List<SavedWorkoutSession>>? _savedSessions;
 
-  static const List<_DayBar> _bars = [
-    _DayBar(
-      label: 'L',
-      heightFactor: 0.82,
-      valueLabel: '2.8k',
-      color: AppColors.primaryLight,
-      feedback: 'Lunes: 2,850 kg (Empuje: Press Banca & Deltoides)',
-    ),
-    _DayBar(
-      label: 'M',
-      heightFactor: 0.56,
-      valueLabel: '1.9k',
-      color: AppColors.tertiaryDim,
-      feedback: 'Martes: 1,920 kg (Tirón: Dominadas & Remo Pendlay)',
-    ),
-    _DayBar(
-      label: 'X',
-      heightFactor: 0.10,
-      rest: true,
-      feedback: 'Miércoles: Descanso Activo / Movilidad y Cardio suave',
-    ),
-    _DayBar(
-      label: 'J',
-      heightFactor: 1.0,
-      valueLabel: '3.5k',
-      color: AppColors.primary,
-      highlighted: true,
-      feedback: 'Jueves: 3,450 kg (Pierna: Sentadilla 110kg & Prensa 180kg)',
-    ),
-    _DayBar(
-      label: 'V',
-      heightFactor: 0.68,
-      valueLabel: '2.3k',
-      color: AppColors.tertiary,
-      feedback: 'Viernes: 2,300 kg (Torso Híbrido & Brazos)',
-    ),
-    _DayBar(
-      label: 'S',
-      heightFactor: 0.52,
-      valueLabel: '1.8k',
-      color: AppColors.tertiaryDim,
-      feedback: 'Sábado: 1,800 kg (Glúteo & Isquiotibiales)',
-    ),
-    _DayBar(
-      label: 'D',
-      heightFactor: 0.06,
-      rest: true,
-      feedback: 'Domingo: Descanso Programado y Recarga Nutricional',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final repository = widget.workoutRepository;
+    final ownerId = widget.ownerId;
+    if (repository != null && ownerId != null) {
+      _savedSessions = repository.getSessions(ownerId);
+    }
+  }
 
   void _selectPeriod(_Period p) {
     setState(() {
       _period = p;
-      switch (p) {
-        case _Period.semanal:
-          _feedback =
-              'Semana actual: 14,320 kg acumulados en 5 sesiones activas';
-          break;
-        case _Period.mensual:
-          _feedback =
-              'Mes en curso: 58,400 kg totales levantados (+20% vs mes anterior)';
-          break;
-        case _Period.historico:
-          _feedback =
-              'Histórico total: 248,150 kg registrados con 94% de constancia';
-          break;
-      }
+      _feedback = 'Selecciona una barra para ver el volumen registrado.';
     });
   }
 
-  void _toggleAllSessions() {
-    final anyClosed =
-        kWorkoutHistory.any((item) => _openSessions[item.id] != true);
+  Future<void> _toggleAllSessions() async {
+    final sessions = await _savedSessions ?? const <SavedWorkoutSession>[];
+    if (!mounted) return;
+    final anyClosed = sessions.any((item) => _openSessions[item.id] != true);
     setState(() {
-      for (final item in kWorkoutHistory) {
+      for (final item in sessions) {
         _openSessions[item.id] = anyClosed;
       }
     });
@@ -178,8 +132,7 @@ class _ProgresoViewState extends State<ProgresoView> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text('Mi Progreso y Constancia',
-                      style: AppText.headlineMd()),
+                  Text('Mi Progreso y Constancia', style: AppText.headlineMd()),
                 ],
               ),
             ),
@@ -197,8 +150,11 @@ class _ProgresoViewState extends State<ProgresoView> {
                   ),
                 ],
               ),
-              child: const Icon(Symbols.trending_up,
-                  size: 24, color: AppColors.primaryLight),
+              child: const Icon(
+                Symbols.trending_up,
+                size: 24,
+                color: AppColors.primaryLight,
+              ),
             ),
           ],
         ),
@@ -246,8 +202,9 @@ class _ProgresoViewState extends State<ProgresoView> {
           child: Text(
             label,
             style: AppText.labelMd(
-              color:
-                  selected ? AppColors.onPrimary : AppColors.onSurfaceVariant,
+              color: selected
+                  ? AppColors.onPrimary
+                  : AppColors.onSurfaceVariant,
               size: 12,
               weight: selected ? FontWeight.w700 : FontWeight.w600,
             ),
@@ -259,44 +216,62 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   // ------------------------------------------------------- métricas clave
   Widget _keyMetrics() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: _metricCard(
-            icon: Symbols.fitness_center,
-            iconColor: AppColors.primaryLight,
-            tag: '+20%',
-            tagColor: AppColors.primaryLight,
-            value: '18',
-            label: 'Sesiones',
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _metricCard(
-            icon: Symbols.calendar_month,
-            iconColor: AppColors.tertiary,
-            tag: 'Top',
-            tagColor: AppColors.tertiary,
-            value: '94%',
-            label: 'Asistencia',
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _metricCard(
-            icon: Symbols.military_tech,
-            iconColor: AppColors.secondaryLight,
-            tag: 'Nuevos',
-            tagColor: AppColors.secondaryLight,
-            value: '4 PRs',
-            label: 'Superados',
-          ),
-        ),
-      ],
+    return FutureBuilder<List<SavedWorkoutSession>>(
+      future: _savedSessions,
+      builder: (context, snapshot) {
+        final sessions = snapshot.data ?? const <SavedWorkoutSession>[];
+        final totalVolume = sessions.fold<double>(
+          0,
+          (sum, session) => sum + session.volumeKg,
+        );
+        final totalSets = sessions.fold<int>(
+          0,
+          (sum, session) => sum + session.totalSets,
+        );
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _metricCard(
+                icon: Symbols.fitness_center,
+                iconColor: AppColors.primaryLight,
+                tag: 'Guardadas',
+                tagColor: AppColors.primaryLight,
+                value: '${sessions.length}',
+                label: 'Sesiones',
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _metricCard(
+                icon: Symbols.monitor_weight,
+                iconColor: AppColors.tertiary,
+                tag: 'kg total',
+                tagColor: AppColors.tertiary,
+                value: _formatMetric(totalVolume),
+                label: 'Volumen',
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _metricCard(
+                icon: Symbols.check_circle,
+                iconColor: AppColors.secondaryLight,
+                tag: 'Hechas',
+                tagColor: AppColors.secondaryLight,
+                value: '$totalSets',
+                label: 'Series',
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
+
+  String _formatMetric(double value) => value >= 1000
+      ? '${(value / 1000).toStringAsFixed(1)}k'
+      : '${value.round()}';
 
   Widget _metricCard({
     required IconData icon,
@@ -323,8 +298,10 @@ class _ProgresoViewState extends State<ProgresoView> {
                   foreground: tagColor,
                   fontSize: 10,
                   bold: true,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                 ),
               ),
             ],
@@ -340,6 +317,126 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   // --------------------------------------------------------- gráfico barras
   Widget _volumeChart() {
+    return FutureBuilder<List<SavedWorkoutSession>>(
+      future: _savedSessions,
+      builder: (context, snapshot) {
+        final sessions = snapshot.data ?? const <SavedWorkoutSession>[];
+        final selected = _filterByPeriod(sessions);
+        final bars = _barsForSessions(sessions);
+        final total = selected.fold<double>(
+          0,
+          (sum, session) => sum + session.volumeKg,
+        );
+        return _volumeChartContent(bars, total);
+      },
+    );
+  }
+
+  List<SavedWorkoutSession> _filterByPeriod(
+    List<SavedWorkoutSession> sessions,
+  ) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekStart = today.subtract(Duration(days: now.weekday - 1));
+    return sessions
+        .where((session) {
+          final date = session.completedAt.toLocal();
+          return switch (_period) {
+            _Period.semanal =>
+              !date.isBefore(weekStart) &&
+                  date.isBefore(weekStart.add(const Duration(days: 7))),
+            _Period.mensual => date.year == now.year && date.month == now.month,
+            _Period.historico => true,
+          };
+        })
+        .toList(growable: false);
+  }
+
+  List<_DayBar> _barsForSessions(List<SavedWorkoutSession> sessions) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final volumes = <({String label, String feedback, double volume})>[];
+    switch (_period) {
+      case _Period.semanal:
+        final start = today.subtract(Duration(days: now.weekday - 1));
+        for (var index = 0; index < 7; index++) {
+          final date = start.add(Duration(days: index));
+          final daily = sessions.where(
+            (session) => _sameDay(session.completedAt.toLocal(), date),
+          );
+          final volume = daily.fold<double>(
+            0,
+            (sum, session) => sum + session.volumeKg,
+          );
+          volumes.add((
+            label: const ['L', 'M', 'X', 'J', 'V', 'S', 'D'][index],
+            feedback: '${date.day}/${date.month}: ${volume.round()} kg',
+            volume: volume,
+          ));
+        }
+      case _Period.mensual:
+        final monthStart = DateTime(now.year, now.month, 1);
+        for (var index = 0; index < 5; index++) {
+          final start = monthStart.add(Duration(days: index * 7));
+          final nextWeek = start.add(const Duration(days: 7));
+          final nextMonth = DateTime(now.year, now.month + 1);
+          final end = nextWeek.isAfter(nextMonth) ? nextMonth : nextWeek;
+          final weekly = sessions.where((session) {
+            final date = session.completedAt.toLocal();
+            return !date.isBefore(start) && date.isBefore(end);
+          });
+          final volume = weekly.fold<double>(
+            0,
+            (sum, session) => sum + session.volumeKg,
+          );
+          volumes.add((
+            label: 'S${index + 1}',
+            feedback: 'Semana ${index + 1}: ${volume.round()} kg',
+            volume: volume,
+          ));
+        }
+      case _Period.historico:
+        final recent = sessions.toList()
+          ..sort((a, b) => a.completedAt.compareTo(b.completedAt));
+        final items = recent.length > 7
+            ? recent.sublist(recent.length - 7)
+            : recent;
+        for (final session in items) {
+          final date = session.completedAt.toLocal();
+          volumes.add((
+            label: '${date.day}/${date.month}',
+            feedback:
+                '${date.day}/${date.month}: ${session.volumeKg.round()} kg · ${session.title}',
+            volume: session.volumeKg,
+          ));
+        }
+    }
+
+    final maximum = volumes.fold<double>(
+      0,
+      (value, item) => math.max(value, item.volume),
+    );
+    return volumes
+        .map(
+          (item) => _DayBar(
+            label: item.label,
+            heightFactor: maximum == 0 ? 0.02 : item.volume / maximum,
+            feedback: item.feedback,
+            valueLabel: item.volume == 0 ? null : _formatMetric(item.volume),
+            color: item.volume == 0 ? null : AppColors.primary,
+            highlighted: false,
+            rest: item.volume == 0,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  bool _sameDay(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+
+  Widget _volumeChartContent(List<_DayBar> bars, double totalVolume) {
     return SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,15 +447,17 @@ class _ProgresoViewState extends State<ProgresoView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Volumen de Carga',
-                        style: AppText.headlineSm(size: 14)),
+                    Text(
+                      'Volumen de Carga',
+                      style: AppText.headlineSm(size: 14),
+                    ),
                     RichText(
                       text: TextSpan(
                         style: AppText.bodySm(),
                         children: [
                           const TextSpan(text: 'Total acumulado: '),
                           TextSpan(
-                            text: '14,320 kg',
+                            text: '${totalVolume.round()} kg',
                             style: AppText.bodySm(
                               color: AppColors.primary,
                               weight: FontWeight.w700,
@@ -371,8 +470,10 @@ class _ProgresoViewState extends State<ProgresoView> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceHigh,
                   borderRadius: BorderRadius.circular(999),
@@ -383,7 +484,14 @@ class _ProgresoViewState extends State<ProgresoView> {
                   children: [
                     const PulseDot(size: 8),
                     const SizedBox(width: 6),
-                    Text('Semana en Curso', style: AppText.labelSm(size: 11)),
+                    Text(
+                      switch (_period) {
+                        _Period.semanal => 'Semana actual',
+                        _Period.mensual => 'Mes actual',
+                        _Period.historico => 'Histórico',
+                      },
+                      style: AppText.labelSm(size: 11),
+                    ),
                   ],
                 ),
               ),
@@ -406,7 +514,7 @@ class _ProgresoViewState extends State<ProgresoView> {
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: _bars.map(_buildBar).toList(),
+                  children: bars.map(_buildBar).toList(),
                 ),
               ],
             ),
@@ -421,8 +529,11 @@ class _ProgresoViewState extends State<ProgresoView> {
             ),
             child: Row(
               children: [
-                const Icon(Symbols.analytics,
-                    size: 18, color: AppColors.primaryLight),
+                const Icon(
+                  Symbols.analytics,
+                  size: 18,
+                  color: AppColors.primaryLight,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -469,30 +580,31 @@ class _ProgresoViewState extends State<ProgresoView> {
                     width: double.infinity,
                     height: 132 * bar.heightFactor,
                     child: Container(
-                          decoration: BoxDecoration(
-                            color: bar.rest
-                                ? AppColors.fade(AppColors.surfaceHigh, 0.4)
-                                : bar.color,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(6),
-                            ),
-                            border: bar.highlighted
-                                ? Border.all(color: AppColors.primary)
-                                : bar.rest
-                                    ? const Border(
-                                        top: BorderSide(
-                                            color: AppColors.surfaceHighest),
-                                      )
-                                    : null,
-                            boxShadow: bar.rest || bar.color == null
-                                ? null
-                                : [
-                                    BoxShadow(
-                                      color: AppColors.fade(bar.color!, 0.45),
-                                      blurRadius: bar.highlighted ? 16 : 10,
-                                    ),
-                                  ],
-                          ),
+                      decoration: BoxDecoration(
+                        color: bar.rest
+                            ? AppColors.fade(AppColors.surfaceHigh, 0.4)
+                            : bar.color,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(6),
+                        ),
+                        border: bar.highlighted
+                            ? Border.all(color: AppColors.primary)
+                            : bar.rest
+                            ? const Border(
+                                top: BorderSide(
+                                  color: AppColors.surfaceHighest,
+                                ),
+                              )
+                            : null,
+                        boxShadow: bar.rest || bar.color == null
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: AppColors.fade(bar.color!, 0.45),
+                                  blurRadius: bar.highlighted ? 16 : 10,
+                                ),
+                              ],
+                      ),
                     ),
                   ),
                 ),
@@ -506,8 +618,8 @@ class _ProgresoViewState extends State<ProgresoView> {
                     color: bar.highlighted
                         ? AppColors.primary
                         : (bar.valueLabel != null && bar.label == 'L'
-                            ? AppColors.onSurface
-                            : AppColors.onSurfaceVariant),
+                              ? AppColors.onSurface
+                              : AppColors.onSurfaceVariant),
                     size: 12,
                     weight: bar.highlighted ? FontWeight.w700 : FontWeight.w600,
                   ),
@@ -522,27 +634,60 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   // ------------------------------------------------------------------ PRs
   Widget _personalRecords() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return FutureBuilder<List<SavedWorkoutSession>>(
+      future: _savedSessions,
+      builder: (context, snapshot) {
+        final bestSets = <String, SavedWorkoutSet>{};
+        for (final session in snapshot.data ?? const <SavedWorkoutSession>[]) {
+          for (final set in session.sets) {
+            final current = bestSets[set.exerciseName];
+            if (current == null || set.weightKg > current.weightKg) {
+              bestSets[set.exerciseName] = set;
+            }
+          }
+        }
+        final records = bestSets.entries
+            .map(
+              (entry) => PersonalRecord(
+                id: entry.key,
+                exercise: entry.key,
+                weight: entry.value.weightKg,
+                repsOrNote: '${entry.value.reps} repeticiones',
+                diff: 'Mejor carga',
+                icon: Symbols.fitness_center,
+              ),
+            )
+            .toList(growable: false);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Symbols.emoji_events,
-                size: 22, color: AppColors.secondaryLight),
-            const SizedBox(width: 8),
-            Text('Marcas Personales (PRs)',
-                style: AppText.headlineSm(size: 14)),
-            const Spacer(),
-            Text(
-              'Últimos 30 días',
-              style: AppText.labelSm(
-                  color: AppColors.primaryLight, size: 12, letterSpacing: 0),
+            Row(
+              children: [
+                const Icon(
+                  Symbols.emoji_events,
+                  size: 22,
+                  color: AppColors.secondaryLight,
+                ),
+                const SizedBox(width: 8),
+                Text('Marcas Personales', style: AppText.headlineSm(size: 14)),
+              ],
             ),
+            const SizedBox(height: 8),
+            if (snapshot.hasError)
+              Text(
+                'No se pudieron cargar tus marcas.',
+                style: AppText.bodySm(color: AppColors.error),
+              )
+            else if (records.isEmpty)
+              Text(
+                'Registra y guarda series para ver tus mejores cargas.',
+                style: AppText.bodySm(size: 12),
+              )
+            else
+              ...records.map(_prCard),
           ],
-        ),
-        const SizedBox(height: 8),
-        ...kPersonalRecords.map(_prCard),
-      ],
+        );
+      },
     );
   }
 
@@ -573,8 +718,11 @@ class _ProgresoViewState extends State<ProgresoView> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.surfaceHighest),
                         ),
-                        child: Icon(pr.icon,
-                            size: 24, color: AppColors.primaryLight),
+                        child: Icon(
+                          pr.icon,
+                          size: 24,
+                          color: AppColors.primaryLight,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -600,14 +748,20 @@ class _ProgresoViewState extends State<ProgresoView> {
                                     label: 'NUEVO PR',
                                     icon: Symbols.verified,
                                     background: AppColors.fade(
-                                        AppColors.secondary, 0.2),
+                                      AppColors.secondary,
+                                      0.2,
+                                    ),
                                     foreground: AppColors.secondaryLight,
                                     borderColor: AppColors.fade(
-                                        AppColors.secondary, 0.3),
+                                      AppColors.secondary,
+                                      0.3,
+                                    ),
                                     fontSize: 10,
                                     bold: true,
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 2),
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -630,12 +784,8 @@ class _ProgresoViewState extends State<ProgresoView> {
                             text: TextSpan(
                               style: AppText.metric(size: 18),
                               children: [
-                                TextSpan(
-                                    text: pr.weight.toStringAsFixed(0)),
-                                TextSpan(
-                                  text: ' kg',
-                                  style: AppText.bodySm(),
-                                ),
+                                TextSpan(text: pr.weight.toStringAsFixed(0)),
+                                TextSpan(text: ' kg', style: AppText.bodySm()),
                               ],
                             ),
                           ),
@@ -663,28 +813,63 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   // -------------------------------------------------------------- badges
   Widget _badges() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return FutureBuilder<List<SavedWorkoutSession>>(
+      future: _savedSessions,
+      builder: (context, snapshot) {
+        final count = snapshot.data?.length ?? 0;
+        final badges = [
+          _streakBadge('first-session', 'Primera sesión', 1, count),
+          _streakBadge('five-sessions', 'Constancia', 5, count),
+          _streakBadge('ten-sessions', 'Disciplina', 10, count),
+        ];
+        final unlocked = badges.where((badge) => badge.completed).length;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Symbols.workspace_premium,
-                size: 22, color: AppColors.primaryLight),
-            const SizedBox(width: 8),
-            Text('Insignias y Retos', style: AppText.headlineSm(size: 14)),
-            const Spacer(),
-            Pill(
-              label: '3 / 4 Desbloqueadas',
-              background: AppColors.fade(AppColors.primary, 0.15),
-              foreground: AppColors.primaryLight,
-              fontSize: 12,
-              bold: true,
+            Row(
+              children: [
+                const Icon(
+                  Symbols.workspace_premium,
+                  size: 22,
+                  color: AppColors.primaryLight,
+                ),
+                const SizedBox(width: 8),
+                Text('Insignias y Retos', style: AppText.headlineSm(size: 14)),
+                const Spacer(),
+                Pill(
+                  label: '$unlocked / ${badges.length} desbloqueadas',
+                  background: AppColors.fade(AppColors.primary, 0.15),
+                  foreground: AppColors.primaryLight,
+                  fontSize: 11,
+                  bold: true,
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
+            if (snapshot.hasError)
+              Text(
+                'No se pudieron calcular tus insignias.',
+                style: AppText.bodySm(color: AppColors.error),
+              )
+            else
+              ...badges.map(_badgeCard),
           ],
-        ),
-        const SizedBox(height: 8),
-        ...kBadges.map(_badgeCard),
-      ],
+        );
+      },
+    );
+  }
+
+  BadgeItem _streakBadge(String id, String title, int required, int count) {
+    final completed = count >= required;
+    final progress = (count * 100 ~/ required).clamp(0, 100);
+    return BadgeItem(
+      id: id,
+      title: title,
+      description: 'Completa $required sesiones de entrenamiento.',
+      icon: completed ? '🏆' : '🎯',
+      completed: completed,
+      progressText: '$count / $required sesiones',
+      progressPercent: progress,
     );
   }
 
@@ -710,8 +895,10 @@ class _ProgresoViewState extends State<ProgresoView> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.surfaceHighest),
                       ),
-                      child: Text(badge.icon,
-                          style: const TextStyle(fontSize: 22)),
+                      child: Text(
+                        badge.icon,
+                        style: const TextStyle(fontSize: 22),
+                      ),
                     ),
                     if (badge.completed)
                       const Positioned(
@@ -720,8 +907,12 @@ class _ProgresoViewState extends State<ProgresoView> {
                         child: CircleAvatar(
                           radius: 9,
                           backgroundColor: AppColors.background,
-                          child: Icon(Symbols.check_circle,
-                              size: 16, color: AppColors.primary, fill: 1),
+                          child: Icon(
+                            Symbols.check_circle,
+                            size: 16,
+                            color: AppColors.primary,
+                            fill: 1,
+                          ),
                         ),
                       ),
                   ],
@@ -790,35 +981,90 @@ class _ProgresoViewState extends State<ProgresoView> {
 
   // ------------------------------------------------------------- historial
   Widget _history() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Symbols.history, size: 22, color: AppColors.tertiary),
-            const SizedBox(width: 8),
-            Text('Historial de Sesiones',
-                style: AppText.headlineSm(size: 14)),
-            const Spacer(),
-            InkWell(
-              onTap: _toggleAllSessions,
-              child: Text(
-                'Alternar Todo',
-                style: AppText.labelSm(
-                  color: AppColors.primary,
-                  size: 12,
-                  weight: FontWeight.w700,
-                  letterSpacing: 0,
-                ),
+    return FutureBuilder<List<SavedWorkoutSession>>(
+      future: _savedSessions,
+      builder: (context, snapshot) {
+        final sessions = snapshot.data ?? const <SavedWorkoutSession>[];
+        final history = sessions
+            .map(
+              (session) => WorkoutHistoryItem(
+                id: session.id,
+                dateStr: _dateLabel(session.completedAt.toLocal()),
+                timeStr: _timeLabel(session.completedAt.toLocal()),
+                title: session.title,
+                durationMin: session.durationSeconds ~/ 60,
+                totalSets: session.totalSets,
+                volumeKg: session.volumeKg.round(),
+                icon: Symbols.fitness_center,
+                exercises: session.sets
+                    .map(
+                      (set) => HistoryExercise(
+                        name: set.exerciseName,
+                        details:
+                            'Serie ${set.setNumber}: ${set.weightKg} kg × ${set.reps} reps',
+                      ),
+                    )
+                    .toList(growable: false),
               ),
+            )
+            .toList(growable: false);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Symbols.history,
+                  size: 22,
+                  color: AppColors.tertiary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Historial de Sesiones',
+                  style: AppText.headlineSm(size: 14),
+                ),
+                const Spacer(),
+                if (history.isNotEmpty)
+                  InkWell(
+                    onTap: _toggleAllSessions,
+                    child: Text(
+                      'Alternar Todo',
+                      style: AppText.labelSm(
+                        color: AppColors.primary,
+                        size: 12,
+                        weight: FontWeight.w700,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
+              ],
             ),
+            const SizedBox(height: 8),
+            if (snapshot.hasError)
+              Text(
+                'No se pudo cargar el historial guardado.',
+                style: AppText.bodySm(color: AppColors.error),
+              )
+            else if (history.isEmpty)
+              Text(
+                'Tus sesiones finalizadas aparecerán aquí.',
+                style: AppText.bodySm(size: 12),
+              )
+            else
+              ...history.map(_historyCard),
           ],
-        ),
-        const SizedBox(height: 8),
-        ...kWorkoutHistory.map(_historyCard),
-      ],
+        );
+      },
     );
   }
+
+  String _dateLabel(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/'
+      '${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  String _timeLabel(DateTime date) =>
+      '${date.hour.toString().padLeft(2, '0')}:'
+      '${date.minute.toString().padLeft(2, '0')}';
 
   Widget _historyCard(WorkoutHistoryItem item) {
     final isOpen = _openSessions[item.id] == true;
@@ -831,8 +1077,7 @@ class _ProgresoViewState extends State<ProgresoView> {
         child: Column(
           children: [
             InkWell(
-              onTap: () =>
-                  setState(() => _openSessions[item.id] = !isOpen),
+              onTap: () => setState(() => _openSessions[item.id] = !isOpen),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Row(
@@ -845,8 +1090,11 @@ class _ProgresoViewState extends State<ProgresoView> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.surfaceHighest),
                       ),
-                      child: Icon(item.icon,
-                          size: 20, color: AppColors.primaryLight),
+                      child: Icon(
+                        item.icon,
+                        size: 20,
+                        color: AppColors.primaryLight,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -876,11 +1124,17 @@ class _ProgresoViewState extends State<ProgresoView> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('${item.durationMin} min',
-                            style: AppText.metric(
-                                size: 12, weight: FontWeight.w600)),
-                        Text('${item.totalSets} series',
-                            style: AppText.labelSm(size: 10)),
+                        Text(
+                          '${item.durationMin} min',
+                          style: AppText.metric(
+                            size: 12,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${item.totalSets} series',
+                          style: AppText.labelSm(size: 10),
+                        ),
                       ],
                     ),
                     const SizedBox(width: 8),
@@ -905,8 +1159,9 @@ class _ProgresoViewState extends State<ProgresoView> {
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 decoration: const BoxDecoration(
                   color: AppColors.surfaceLow,
-                  border:
-                      Border(top: BorderSide(color: AppColors.cardBorderSoft)),
+                  border: Border(
+                    top: BorderSide(color: AppColors.cardBorderSoft),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,10 +1176,16 @@ class _ProgresoViewState extends State<ProgresoView> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: _miniStat('Tiempo', '${item.durationMin} min'),
+                            child: _miniStat(
+                              'Tiempo',
+                              '${item.durationMin} min',
+                            ),
                           ),
                           Expanded(
-                            child: _miniStat('Series', '${item.totalSets} tot.'),
+                            child: _miniStat(
+                              'Series',
+                              '${item.totalSets} tot.',
+                            ),
                           ),
                           Expanded(
                             child: _miniStat(
@@ -953,7 +1214,9 @@ class _ProgresoViewState extends State<ProgresoView> {
                             Text(
                               ex.details,
                               style: AppText.metric(
-                                  size: 12, weight: FontWeight.w600),
+                                size: 12,
+                                weight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -975,10 +1238,7 @@ class _ProgresoViewState extends State<ProgresoView> {
         const SizedBox(height: 2),
         Text(
           value,
-          style: AppText.metric(
-            color: color ?? AppColors.onSurface,
-            size: 12,
-          ),
+          style: AppText.metric(color: color ?? AppColors.onSurface, size: 12),
         ),
       ],
     );
@@ -1020,12 +1280,17 @@ class _ProgresoViewState extends State<ProgresoView> {
                   color: AppColors.fade(AppColors.primary, 0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Symbols.military_tech,
-                    size: 28, color: AppColors.primary),
+                child: const Icon(
+                  Symbols.military_tech,
+                  size: 28,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(height: 16),
-              Text('Tarjeta Atlética GymMate',
-                  style: AppText.headlineMd(size: 18)),
+              Text(
+                'Tarjeta Atlética GymMate',
+                style: AppText.headlineMd(size: 18),
+              ),
               const SizedBox(height: 6),
               Text(
                 '¡Carlos lleva 4 días de racha, 14,320 kg acumulados esta '
@@ -1043,14 +1308,23 @@ class _ProgresoViewState extends State<ProgresoView> {
                 ),
                 child: Column(
                   children: [
-                    _shareRow('Atleta:', 'Carlos (Intermedio)',
-                        AppColors.onSurface),
+                    _shareRow(
+                      'Atleta:',
+                      'Carlos (Intermedio)',
+                      AppColors.onSurface,
+                    ),
                     const SizedBox(height: 8),
-                    _shareRow('Récord reciente:', 'Press de Banca 85 kg',
-                        AppColors.primary),
+                    _shareRow(
+                      'Récord reciente:',
+                      'Press de Banca 85 kg',
+                      AppColors.primary,
+                    ),
                     const SizedBox(height: 8),
-                    _shareRow('Constancia:', '94% Asistencia',
-                        AppColors.secondaryLight),
+                    _shareRow(
+                      'Constancia:',
+                      '94% Asistencia',
+                      AppColors.secondaryLight,
+                    ),
                   ],
                 ),
               ),
